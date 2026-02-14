@@ -1,0 +1,11 @@
+0000000000000000000000000000000000000000 bf8d932e2821dbd9be24b44be6be4bbe1af08ebb José Aguilera <joseaguilera1709@gmail.com> 1767797587 -0300	commit (initial): Initial commit
+bf8d932e2821dbd9be24b44be6be4bbe1af08ebb e6f2120f6f2b5286cc460e7df3fd0347703df08b José Aguilera <joseaguilera1709@gmail.com> 1767797681 -0300	commit: First commit
+e6f2120f6f2b5286cc460e7df3fd0347703df08b e6f2120f6f2b5286cc460e7df3fd0347703df08b José Aguilera <joseaguilera1709@gmail.com> 1767798870 -0300	reset: moving to HEAD
+e6f2120f6f2b5286cc460e7df3fd0347703df08b e6f2120f6f2b5286cc460e7df3fd0347703df08b José Aguilera <joseaguilera1709@gmail.com> 1767798871 -0300	rebase (start): checkout e6f2120f6f2b5286cc460e7df3fd0347703df08b
+e6f2120f6f2b5286cc460e7df3fd0347703df08b 61c7f4d9cb8a8fbbba168813a772e6933b4673b3 José Aguilera <joseaguilera1709@gmail.com> 1767798871 -0300	rebase (pick): feat: Initialize database schema for Nacho POS system
+61c7f4d9cb8a8fbbba168813a772e6933b4673b3 61c7f4d9cb8a8fbbba168813a772e6933b4673b3 José Aguilera <joseaguilera1709@gmail.com> 1767798871 -0300	rebase (finish): returning to refs/heads/main
+61c7f4d9cb8a8fbbba168813a772e6933b4673b3 61c7f4d9cb8a8fbbba168813a772e6933b4673b3 José Aguilera <joseaguilera1709@gmail.com> 1767798872 -0300	rebase: [e6f2120f6f2b5286cc460e7df3fd0347703df08b] [d433ca965979653017d9ca98375d8c2771bf3c4a]
+61c7f4d9cb8a8fbbba168813a772e6933b4673b3 ea0879f89f125d4604998a628aa5c6352387e3cf José Aguilera <joseaguilera1709@gmail.com> 1768829881 -0300	commit: Ajuste Categorias
+ea0879f89f125d4604998a628aa5c6352387e3cf 4f50962b68ca32ace2deaa1eb0def4f2083d5341 José Aguilera <joseaguilera1709@gmail.com> 1769700065 -0300	commit: database update
+4f50962b68ca32ace2deaa1eb0def4f2083d5341 d88937bc7bc341956d52880779fe0bd46a61918e José Aguilera <joseaguilera1709@gmail.com> 1770672266 -0300	merge origin/main: Fast-forward
+d88937bc7bc341956d52880779fe0bd46a61918e 24174799c6eb38119e7cafba81ae7233bf8f45b1 José Aguilera <joseaguilera1709@gmail.com> 1771010296 -0300	merge origin/main: Fast-forward

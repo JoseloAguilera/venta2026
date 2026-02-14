@@ -1,0 +1,15 @@
+[core]
+	bare = false
+	repositoryformatversion = 0
+	filemode = false
+	symlinks = false
+	ignorecase = true
+	logallrefupdates = true
+[remote "origin"]
+	url = https://github.com/JoseloAguilera/nacho.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+	pushurl = https://github.com/JoseloAguilera/nacho.git
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+	vscode-merge-base = origin/main

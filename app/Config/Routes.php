@@ -12,7 +12,7 @@ $routes->get('/', 'Home::index');
 $routes->get('debug/session', 'Debug::session');
 
 // Authentication routes
-$routes->group('auth', function($routes) {
+$routes->group('auth', function ($routes) {
     $routes->get('login', 'Auth::login');
     $routes->post('login', 'Auth::attemptLogin');
     $routes->get('logout', 'Auth::logout');
@@ -24,8 +24,9 @@ $routes->group('auth', function($routes) {
 $routes->get('dashboard', 'Dashboard::index', ['filter' => 'auth']);
 
 // Products module (requires authentication)
-$routes->group('products', ['filter' => 'auth'], function($routes) {
+$routes->group('products', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Products::index');
+    $routes->get('view/(:num)', 'Products::view/$1');
     $routes->get('create', 'Products::create');
     $routes->post('store', 'Products::store');
     $routes->get('edit/(:num)', 'Products::edit/$1');
@@ -34,13 +35,13 @@ $routes->group('products', ['filter' => 'auth'], function($routes) {
 });
 
 // Product Stock module (requires authentication)
-$routes->group('product-stock', ['filter' => 'auth'], function($routes) {
+$routes->group('product-stock', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'ProductStock::index');
     $routes->get('warehouse/(:num)', 'ProductStock::warehouse/$1');
 });
 
 // Categories module (requires authentication)
-$routes->group('categories', ['filter' => 'auth'], function($routes) {
+$routes->group('categories', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Categories::index');
     $routes->get('create', 'Categories::create');
     $routes->post('store', 'Categories::store');
@@ -50,7 +51,7 @@ $routes->group('categories', ['filter' => 'auth'], function($routes) {
 });
 
 // Customers module (requires authentication)
-$routes->group('customers', ['filter' => 'auth'], function($routes) {
+$routes->group('customers', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Customers::index');
     $routes->get('create', 'Customers::create');
     $routes->post('store', 'Customers::store');
@@ -62,7 +63,7 @@ $routes->group('customers', ['filter' => 'auth'], function($routes) {
 });
 
 // Suppliers module (requires authentication)
-$routes->group('suppliers', ['filter' => 'auth'], function($routes) {
+$routes->group('suppliers', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Suppliers::index');
     $routes->get('create', 'Suppliers::create');
     $routes->post('store', 'Suppliers::store');
@@ -73,27 +74,28 @@ $routes->group('suppliers', ['filter' => 'auth'], function($routes) {
 });
 
 // Sales module (requires authentication)
-$routes->group('sales', ['filter' => 'auth'], function($routes) {
+$routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Sales::index');
     $routes->get('create', 'Sales::create');
     $routes->post('store', 'Sales::store');
     $routes->get('view/(:num)', 'Sales::view/$1');
-    $routes->get('delete/(:num)', 'Sales::delete/$1', ['filter' => 'role:admin']);
+    $routes->get('ticket/(:num)', 'Sales::ticket/$1');
+    $routes->get('annul/(:num)', 'Sales::annul/$1', ['filter' => 'role:admin']);
     $routes->post('validate-auth', 'Sales::validateAuth');
     $routes->get('search-products', 'Sales::searchProducts');
 });
 
 // Purchases module (requires authentication)
-$routes->group('purchases', ['filter' => 'auth'], function($routes) {
+$routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Purchases::index');
     $routes->get('create', 'Purchases::create');
     $routes->post('store', 'Purchases::store');
     $routes->get('view/(:num)', 'Purchases::view/$1');
-    $routes->get('delete/(:num)', 'Purchases::delete/$1', ['filter' => 'role:admin']);
+    $routes->get('annul/(:num)', 'Purchases::annul/$1', ['filter' => 'role:admin']);
 });
 
 // Collections module (requires authentication)
-$routes->group('collections', ['filter' => 'auth'], function($routes) {
+$routes->group('collections', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Collections::index');
     $routes->get('create/(:num)', 'Collections::create/$1');
     $routes->post('store', 'Collections::store');
@@ -101,7 +103,7 @@ $routes->group('collections', ['filter' => 'auth'], function($routes) {
 });
 
 // Payments module (requires authentication)
-$routes->group('payments', ['filter' => 'auth'], function($routes) {
+$routes->group('payments', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Payments::index');
     $routes->get('create/(:num)', 'Payments::create/$1');
     $routes->post('store', 'Payments::store');
@@ -109,7 +111,7 @@ $routes->group('payments', ['filter' => 'auth'], function($routes) {
 });
 
 // Inventory Adjustments module (requires authentication)
-$routes->group('inventory-adjustments', ['filter' => 'auth'], function($routes) {
+$routes->group('inventory-adjustments', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'InventoryAdjustments::index');
     $routes->get('create', 'InventoryAdjustments::create');
     $routes->post('store', 'InventoryAdjustments::store');
@@ -118,8 +120,17 @@ $routes->group('inventory-adjustments', ['filter' => 'auth'], function($routes) 
     $routes->get('getStock', 'InventoryAdjustments::getStock');
 });
 
+// Inventory Transfers module (requires authentication)
+$routes->group('inventory-transfers', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'InventoryTransfers::index');
+    $routes->get('create', 'InventoryTransfers::create');
+    $routes->post('store', 'InventoryTransfers::store');
+    $routes->get('view/(:num)', 'InventoryTransfers::view/$1');
+    $routes->get('getStock', 'InventoryTransfers::getStock');
+});
+
 // Expenses module (requires authentication)
-$routes->group('expenses', ['filter' => 'auth'], function($routes) {
+$routes->group('expenses', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Expenses::index');
     $routes->get('create', 'Expenses::create');
     $routes->post('store', 'Expenses::store');
@@ -130,25 +141,45 @@ $routes->group('expenses', ['filter' => 'auth'], function($routes) {
 });
 
 // Profile module (requires authentication)
-$routes->group('profile', ['filter' => 'auth'], function($routes) {
+$routes->group('profile', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Profile::index');
     $routes->post('update', 'Profile::update');
 });
 
 // Settings module (admin only)
-$routes->group('settings', ['filter' => 'role:admin'], function($routes) {
+$routes->group('settings', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('/', 'Settings::index');
     $routes->post('update', 'Settings::update');
 });
 
 // Roles module (requires authentication)
-$routes->group('roles', ['filter' => 'auth'], function($routes) {
+$routes->group('roles', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Roles::index');
     $routes->get('create', 'Roles::create');
     $routes->post('store', 'Roles::store');
     $routes->get('edit/(:num)', 'Roles::edit/$1');
     $routes->post('update/(:num)', 'Roles::update/$1');
     $routes->get('delete/(:num)', 'Roles::delete/$1');
+});
+
+// Users module (requires authentication)
+$routes->group('users', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'Users::index');
+    $routes->get('create', 'Users::create');
+    $routes->post('store', 'Users::store');
+    $routes->get('edit/(:num)', 'Users::edit/$1');
+    $routes->post('update/(:num)', 'Users::update/$1');
+    $routes->get('delete/(:num)', 'Users::delete/$1');
+});
+
+// Warehouses module (requires authentication)
+$routes->group('warehouses', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'Warehouses::index');
+    $routes->get('create', 'Warehouses::create');
+    $routes->post('store', 'Warehouses::store');
+    $routes->get('edit/(:num)', 'Warehouses::edit/$1');
+    $routes->post('update/(:num)', 'Warehouses::update/$1');
+    $routes->get('delete/(:num)', 'Warehouses::delete/$1');
 });
 
 

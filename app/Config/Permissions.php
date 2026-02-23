@@ -25,6 +25,8 @@ class Permissions
         'payments' => 'Pagos',
         'expenses' => 'Gastos',
         'settings' => 'Configuración',
+        'warehouses' => 'Depósitos',
+        'inventory_transfers' => 'Transferencias',
         'roles' => 'Roles'
     ];
 

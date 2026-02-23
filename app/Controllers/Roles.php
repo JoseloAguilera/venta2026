@@ -57,10 +57,17 @@ class Roles extends BaseController
         }
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => 'required|min_length[3]|max_length[100]|is_unique[roles.name]',
             'description' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre del rol es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 100 caracteres',
+                'is_unique' => 'Este nombre de rol ya está en uso'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -92,7 +99,7 @@ class Roles extends BaseController
         }
 
         $role = $this->roleModel->find($id);
-        
+
         if (!$role) {
             return redirect()->to('/roles')->with('error', 'Rol no encontrado');
         }
@@ -115,7 +122,7 @@ class Roles extends BaseController
         }
 
         $role = $this->roleModel->find($id);
-        
+
         if (!$role) {
             return redirect()->to('/roles')->with('error', 'Rol no encontrado');
         }
@@ -126,10 +133,17 @@ class Roles extends BaseController
         }
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => "required|min_length[3]|max_length[100]|is_unique[roles.name,id,{$id}]",
             'description' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre del rol es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 100 caracteres',
+                'is_unique' => 'Este nombre de rol ya está en uso'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -160,15 +174,15 @@ class Roles extends BaseController
         }
 
         $role = $this->roleModel->find($id);
-        
+
         if (!$role) {
             return redirect()->to('/roles')->with('error', 'Rol no encontrado');
         }
 
         // Check if can delete
         if (!$this->roleModel->canDelete($id)) {
-            $message = $role['is_system'] == 1 
-                ? 'No se pueden eliminar roles del sistema' 
+            $message = $role['is_system'] == 1
+                ? 'No se pueden eliminar roles del sistema'
                 : 'No se puede eliminar el rol porque tiene usuarios asignados';
             return redirect()->to('/roles')->with('error', $message);
         }
@@ -190,7 +204,7 @@ class Roles extends BaseController
 
         foreach ($modules as $moduleKey => $moduleName) {
             $permissions[$moduleKey] = [
-                'view'   => $this->request->getPost("perm_{$moduleKey}_view") === 'S' ? 'S' : 'N',
+                'view' => $this->request->getPost("perm_{$moduleKey}_view") === 'S' ? 'S' : 'N',
                 'insert' => $this->request->getPost("perm_{$moduleKey}_insert") === 'S' ? 'S' : 'N',
                 'update' => $this->request->getPost("perm_{$moduleKey}_update") === 'S' ? 'S' : 'N',
                 'delete' => $this->request->getPost("perm_{$moduleKey}_delete") === 'S' ? 'S' : 'N'

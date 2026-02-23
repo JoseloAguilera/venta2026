@@ -75,9 +75,9 @@ class Purchases extends BaseController
             if (empty($products)) {
                 return redirect()->back()->with('error', 'Debe agregar al menos un producto');
             }
-            
+
             if (empty($warehouseId)) {
-                 return redirect()->back()->with('error', 'Debe seleccionar un depósito');
+                return redirect()->back()->with('error', 'Debe seleccionar un depósito');
             }
 
             // Calcular totales
@@ -148,7 +148,7 @@ class Purchases extends BaseController
         require_permission('purchases', 'view');
 
         $purchase = $this->purchaseModel->getPurchaseWithDetails($id);
-        
+
         if (!$purchase) {
             return redirect()->to('/purchases')->with('error', 'Compra no encontrada');
         }
@@ -162,7 +162,7 @@ class Purchases extends BaseController
         return view('purchases/view', $data);
     }
 
-    public function delete($id)
+    public function annul($id)
     {
         // Check delete permission
         require_permission('purchases', 'delete');
@@ -171,9 +171,13 @@ class Purchases extends BaseController
 
         try {
             $purchase = $this->purchaseModel->getPurchaseWithDetails($id);
-            
+
             if (!$purchase) {
                 return redirect()->to('/purchases')->with('error', 'Compra no encontrada');
+            }
+
+            if ($purchase['status'] === 'cancelled') {
+                return redirect()->to('/purchases')->with('error', 'La compra ya está anulada');
             }
 
             // Reducir stock del depósito original
@@ -184,15 +188,16 @@ class Purchases extends BaseController
                 $this->productModel->updateStock($detail['product_id'], $detail['quantity'], 'subtract', $warehouseId);
             }
 
-            $this->purchaseModel->delete($id);
+            // Anular compra (Cambiar estado a cancelled)
+            $this->purchaseModel->update($id, ['status' => 'cancelled']);
 
             $this->db->transComplete();
 
-            return redirect()->to('/purchases')->with('success', 'Compra eliminada correctamente');
+            return redirect()->to('/purchases')->with('success', 'Compra anulada correctamente');
 
         } catch (\Exception $e) {
             $this->db->transRollback();
-            return redirect()->to('/purchases')->with('error', 'Error al eliminar: ' . $e->getMessage());
+            return redirect()->to('/purchases')->with('error', 'Error al anular: ' . $e->getMessage());
         }
     }
 }

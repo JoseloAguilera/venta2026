@@ -45,10 +45,16 @@ class Categories extends BaseController
         require_permission('categories', 'insert');
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => 'required|min_length[3]|max_length[100]',
             'description' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 100 caracteres'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -73,7 +79,7 @@ class Categories extends BaseController
         require_permission('categories', 'update');
 
         $category = $this->categoryModel->find($id);
-        
+
         if (!$category) {
             return redirect()->to('/categories')->with('error', 'Categoría no encontrada');
         }
@@ -92,10 +98,16 @@ class Categories extends BaseController
         require_permission('categories', 'update');
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => 'required|min_length[3]|max_length[100]',
             'description' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 100 caracteres'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -120,7 +132,7 @@ class Categories extends BaseController
         require_permission('categories', 'delete');
 
         $productModel = new ProductModel();
-        
+
         $productCount = $productModel->where('category_id', $id)->countAllResults();
 
         if ($productCount > 0) {

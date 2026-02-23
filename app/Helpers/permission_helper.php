@@ -101,8 +101,23 @@ if (!function_exists('is_admin')) {
         $session = session();
         $roleId = $session->get('role_id');
         $roleName = $session->get('role_name');
-        
-        // Check by role_id (1 = Administrador) or role_name
-        return $roleId == 1 || $roleName === 'Administrador';
+
+        // Check by role_id (1 = Administrador) or role_name (case insensitive)
+        // Also check if role_name contains "admin"
+
+        // Debug logging
+        log_message('error', "Is_Admin Check: RoleID: " . print_r($roleId, true) . ", RoleName: " . print_r($roleName, true));
+
+        if ($roleId == 1)
+            return true;
+
+        if (empty($roleName))
+            return false;
+
+        $roleNameLower = strtolower($roleName);
+        return $roleName === 'Administrador' ||
+            $roleNameLower === 'admin' ||
+            $roleNameLower === 'administrator' ||
+            strpos($roleNameLower, 'admin') !== false;
     }
 }

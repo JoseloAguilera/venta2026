@@ -1,11 +1,11 @@
-<?php 
+<?php
 $extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $extraCSS]); 
+echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $extraCSS]);
 ?>
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -37,8 +37,11 @@ echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $
                         <h3 class="stat-title">Ventas del Día</h3>
                         <div class="stat-icon primary">💰</div>
                     </div>
-                    <p class="stat-value">$0.00</p>
-                    <p class="stat-change positive">+0% vs ayer</p>
+                    <p class="stat-value">$<?= number_format($stats['sales_today'], 2) ?></p>
+                    <p class="stat-change <?= $stats['sales_change'] >= 0 ? 'positive' : 'negative' ?>">
+                        <?= $stats['sales_change'] >= 0 ? '+' : '' ?><?= number_format($stats['sales_change'], 1) ?>% vs
+                        ayer
+                    </p>
                 </div>
 
                 <div class="stat-card success">
@@ -46,7 +49,7 @@ echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $
                         <h3 class="stat-title">Productos</h3>
                         <div class="stat-icon success">📦</div>
                     </div>
-                    <p class="stat-value">0</p>
+                    <p class="stat-value"><?= $stats['products_count'] ?></p>
                     <p class="stat-change">Total en inventario</p>
                 </div>
 
@@ -55,17 +58,8 @@ echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $
                         <h3 class="stat-title">Cuentas por Cobrar</h3>
                         <div class="stat-icon warning">💵</div>
                     </div>
-                    <p class="stat-value">$0.00</p>
+                    <p class="stat-value">$<?= number_format($stats['receivables'], 2) ?></p>
                     <p class="stat-change">Pendientes</p>
-                </div>
-
-                <div class="stat-card danger">
-                    <div class="stat-header">
-                        <h3 class="stat-title">Stock Bajo</h3>
-                        <div class="stat-icon danger">⚠️</div>
-                    </div>
-                    <p class="stat-value">0</p>
-                    <p class="stat-change">Productos</p>
                 </div>
             </div>
 
@@ -97,13 +91,14 @@ echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $
                 <div class="card-body">
                     <h3>¡Bienvenido, <?= $user['username'] ?>!</h3>
                     <p class="text-muted">
-                        Este es tu panel de control del Sistema Ventas 2026. 
+                        Este es tu panel de control del Sistema Ventas 2026.
                         Desde aquí puedes acceder a todas las funcionalidades del sistema.
                     </p>
-                    
+
                     <?php if ($user['role'] === 'admin'): ?>
                         <div class="alert alert-info" style="margin-top: 1rem;">
-                            <strong>Modo Administrador:</strong> Tienes acceso completo a todas las funcionalidades del sistema.
+                            <strong>Modo Administrador:</strong> Tienes acceso completo a todas las funcionalidades del
+                            sistema.
                         </div>
                     <?php endif; ?>
 

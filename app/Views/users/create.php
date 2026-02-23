@@ -1,0 +1,82 @@
+<?php
+$extraCSS = [
+    'assets/css/dashboard.css'
+];
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
+?>
+
+<div class="dashboard-wrapper">
+    <?= view('templates/sidebar') ?>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-title">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h2><?= $title ?></h2>
+            </div>
+            <div class="topbar-actions">
+                <a href="<?= base_url('users') ?>" class="btn btn-secondary">
+                    🔙 Volver
+                </a>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <?php if (session()->getFlashdata('errors')): ?>
+                <div class="alert alert-danger">
+                    <ul>
+                        <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                            <li><?= esc($error) ?></li>
+                        <?php endforeach ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <div class="card">
+                <div class="card-body">
+                    <form action="<?= base_url('users/store') ?>" method="post">
+                        <?= csrf_field() ?>
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nombre de Usuario *</label>
+                            <input type="text" class="form-control" id="username" name="username"
+                                value="<?= old('username') ?>" required minlength="3" maxlength="50">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                value="<?= old('email') ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña *</label>
+                            <input type="password" class="form-control" id="password" name="password"
+                                required minlength="6">
+                            <small class="text-muted">Mínimo 6 caracteres.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role_id" class="form-label">Rol *</label>
+                            <select class="form-select" id="role_id" name="role_id" required>
+                                <option value="">Seleccione un rol...</option>
+                                <?php foreach ($roles as $role): ?>
+                                    <option value="<?= $role['id'] ?>" <?= old('role_id') == $role['id'] ? 'selected' : '' ?>>
+                                        <?= esc($role['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">💾 Guardar Usuario</button>
+                            <a href="<?= base_url('users') ?>" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?= view('templates/footer') ?>

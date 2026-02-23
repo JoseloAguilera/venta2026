@@ -44,13 +44,22 @@ class Customers extends BaseController
         require_permission('customers', 'insert');
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => 'required|min_length[3]|max_length[200]',
             'document' => 'permit_empty|max_length[50]',
             'phone' => 'permit_empty|max_length[50]',
             'email' => 'permit_empty|valid_email',
             'address' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 200 caracteres'
+            ],
+            'email' => [
+                'valid_email' => 'El correo electrónico no es válido'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -78,7 +87,7 @@ class Customers extends BaseController
         require_permission('customers', 'update');
 
         $customer = $this->customerModel->find($id);
-        
+
         if (!$customer) {
             return redirect()->to('/customers')->with('error', 'Cliente no encontrado');
         }
@@ -97,13 +106,22 @@ class Customers extends BaseController
         require_permission('customers', 'update');
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => 'required|min_length[3]|max_length[200]',
             'document' => 'permit_empty|max_length[50]',
             'phone' => 'permit_empty|max_length[50]',
             'email' => 'permit_empty|valid_email',
             'address' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 200 caracteres'
+            ],
+            'email' => [
+                'valid_email' => 'El correo electrónico no es válido'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -130,6 +148,12 @@ class Customers extends BaseController
         // Check delete permission
         require_permission('customers', 'delete');
 
+        // Check if customer has sales
+        $saleModel = new \App\Models\SaleModel();
+        if ($saleModel->where('customer_id', $id)->countAllResults() > 0) {
+            return redirect()->to('/customers')->with('error', 'No se puede eliminar el cliente porque tiene ventas asociadas');
+        }
+
         if ($this->customerModel->delete($id)) {
             return redirect()->to('/customers')->with('success', 'Cliente eliminado correctamente');
         } else {
@@ -143,7 +167,7 @@ class Customers extends BaseController
         require_permission('customers', 'view');
 
         $customer = $this->customerModel->find($id);
-        
+
         if (!$customer) {
             return redirect()->to('/customers')->with('error', 'Cliente no encontrado');
         }
@@ -175,6 +199,15 @@ class Customers extends BaseController
             'phone' => 'permit_empty|max_length[50]',
             'email' => 'permit_empty|valid_email',
             'address' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 200 caracteres'
+            ],
+            'email' => [
+                'valid_email' => 'El correo electrónico no es válido'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {

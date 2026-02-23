@@ -1,11 +1,11 @@
-<?php 
+<?php
 $extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]); 
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 ?>
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -29,7 +29,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                     <form action="<?= base_url('products/update/' . $product['id']) ?>" method="POST">
                         <?= csrf_field() ?>
-                        
+
                         <div class="form-group">
                             <label for="category_id" class="form-label">Categoría *</label>
                             <select id="category_id" name="category_id" class="form-control" required>
@@ -44,124 +44,53 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                         <div class="form-group">
                             <label for="code" class="form-label">Código *</label>
-                            <input 
-                                type="text" 
-                                id="code" 
-                                name="code" 
-                                class="form-control" 
-                                value="<?= old('code', $product['code']) ?>"
-                                required
-                            >
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="imei1" class="form-label">IMEI 1</label>
-                                    <input 
-                                        type="text" 
-                                        id="imei1" 
-                                        name="imei1" 
-                                        class="form-control" 
-                                        value="<?= old('imei1', $product['imei1'] ?? '') ?>"
-                                    >
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="imei2" class="form-label">IMEI 2</label>
-                                    <input 
-                                        type="text" 
-                                        id="imei2" 
-                                        name="imei2" 
-                                        class="form-control" 
-                                        value="<?= old('imei2', $product['imei2'] ?? '') ?>"
-                                    >
-                                </div>
-                            </div>
+                            <input type="text" id="code" name="code" class="form-control"
+                                value="<?= old('code', $product['code']) ?>" required>
                         </div>
 
                         <div class="form-group">
                             <label for="name" class="form-label">Nombre *</label>
-                            <input 
-                                type="text" 
-                                id="name" 
-                                name="name" 
-                                class="form-control" 
-                                value="<?= old('name', $product['name']) ?>"
-                                required
-                            >
+                            <input type="text" id="name" name="name" class="form-control"
+                                value="<?= old('name', $product['name']) ?>" required>
                         </div>
 
                         <div class="form-group">
                             <label for="description" class="form-label">Descripción</label>
-                            <textarea 
-                                id="description" 
-                                name="description" 
-                                class="form-control"
-                            ><?= old('description', $product['description']) ?></textarea>
+                            <textarea id="description" name="description"
+                                class="form-control"><?= old('description', $product['description']) ?></textarea>
                         </div>
 
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="cost_price" class="form-label">Precio Costo *</label>
-                                    <input 
-                                        type="number" 
-                                        id="cost_price" 
-                                        name="cost_price" 
-                                        class="form-control" 
-                                        step="0.01"
-                                        min="0"
-                                        value="<?= old('cost_price', $product['cost_price'] ?? 0) ?>"
-                                        required
-                                    >
+                                    <input type="number" id="cost_price" name="cost_price" class="form-control"
+                                        step="0.01" min="0"
+                                        value="<?= old('cost_price', $product['cost_price'] ?? 0) ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="price" class="form-label">Precio Venta *</label>
-                                    <input 
-                                        type="number" 
-                                        id="price" 
-                                        name="price" 
-                                        class="form-control" 
-                                        step="0.01"
-                                        min="0"
-                                        value="<?= old('price', $product['price']) ?>"
-                                        required
-                                    >
+                                    <input type="number" id="price" name="price" class="form-control" step="0.01"
+                                        min="0" value="<?= old('price', $product['price']) ?>" required>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="min_sale_price" class="form-label">Precio Mínimo *</label>
-                                    <input 
-                                        type="number" 
-                                        id="min_sale_price" 
-                                        name="min_sale_price" 
-                                        class="form-control" 
-                                        step="0.01"
-                                        min="0"
-                                        value="<?= old('min_sale_price', $product['min_sale_price'] ?? 0) ?>"
-                                        required
-                                    >
+                                    <input type="number" id="min_sale_price" name="min_sale_price" class="form-control"
+                                        step="0.01" min="0"
+                                        value="<?= old('min_sale_price', $product['min_sale_price'] ?? 0) ?>" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label for="stock" class="form-label">Stock Actual *</label>
-                            <input 
-                                type="number" 
-                                id="stock" 
-                                name="stock" 
-                                class="form-control" 
-                                min="0"
-                                value="<?= old('stock', $product['stock']) ?>"
-                                readonly
-                                style="background-color: #f3f4f6; cursor: not-allowed;"
-                            >
+                            <input type="number" id="stock" name="stock" class="form-control" min="0"
+                                value="<?= old('stock', $product['stock']) ?>" readonly
+                                style="background-color: #f3f4f6; cursor: not-allowed;">
                             <small class="text-muted">El stock solo se modifica mediante ajustes de inventario</small>
                         </div>
 

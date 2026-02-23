@@ -1,12 +1,12 @@
-<?php 
+<?php
 $extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]); 
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 helper('permission');
 ?>
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -15,10 +15,14 @@ helper('permission');
             </div>
             <div class="topbar-actions">
                 <?php if ($sale['payment_type'] === 'credit' && $pending_balance > 0 && can_insert('collections')): ?>
-                <a href="<?= base_url('collections/create/' . $sale['id']) ?>" class="btn btn-success">
-                    💰 Registrar Pago
-                </a>
+                    <a href="<?= base_url('collections/create/' . $sale['id']) ?>" class="btn btn-success">
+                        💰 Registrar Pago
+                    </a>
                 <?php endif; ?>
+                <a href="javascript:void(0)" onclick="openTicket('<?= base_url('sales/ticket/' . $sale['id']) ?>')"
+                    class="btn btn-info">
+                    🖨️ Imprimir
+                </a>
                 <a href="<?= base_url('sales') ?>" class="btn btn-secondary">
                     ← Volver
                 </a>
@@ -36,22 +40,34 @@ helper('permission');
                             <p><strong>Documento:</strong> <?= esc($sale['customer_document']) ?></p>
                         </div>
                         <div>
-                            <p><strong>Tipo de Pago:</strong> 
-                                <span class="badge <?= $sale['payment_type'] === 'cash' ? 'badge-success' : 'badge-warning' ?>">
+                            <p><strong>Tipo de Pago:</strong>
+                                <span
+                                    class="badge <?= $sale['payment_type'] === 'cash' ? 'badge-success' : 'badge-warning' ?>">
                                     <?= $sale['payment_type'] === 'cash' ? 'Contado' : 'Crédito' ?>
                                 </span>
                             </p>
-                            <p><strong>Estado:</strong> 
+                            <p><strong>Estado:</strong>
                                 <?php
-                                $badges = ['paid' => 'badge-success', 'partial' => 'badge-warning', 'pending' => 'badge-danger'];
-                                $labels = ['paid' => 'Pagado', 'partial' => 'Parcial', 'pending' => 'Pendiente'];
+                                $badges = [
+                                    'paid' => 'badge-success',
+                                    'partial' => 'badge-warning',
+                                    'pending' => 'badge-secondary', // Consistent gray for pending
+                                    'cancelled' => 'badge-danger'   // Red for cancelled
+                                ];
+                                $labels = [
+                                    'paid' => 'Pagado',
+                                    'partial' => 'Parcial',
+                                    'pending' => 'Pendiente',
+                                    'cancelled' => 'Anulada'
+                                ];
                                 ?>
-                                <span class="badge <?= $badges[$sale['status']] ?>">
-                                    <?= $labels[$sale['status']] ?>
+                                <span class="badge <?= $badges[$sale['status']] ?? 'badge-secondary' ?>">
+                                    <?= $labels[$sale['status']] ?? $sale['status'] ?>
                                 </span>
                             </p>
                             <?php if ($sale['payment_type'] === 'credit'): ?>
-                            <p><strong>Saldo Pendiente:</strong> <span class="text-danger">$<?= number_format($pending_balance, 2) ?></span></p>
+                                <p><strong>Saldo Pendiente:</strong> <span
+                                        class="text-danger">$<?= number_format($pending_balance, 2) ?></span></p>
                             <?php endif; ?>
                             <p><strong>Vendedor:</strong> <?= esc($sale['user_name']) ?></p>
                         </div>
@@ -72,8 +88,18 @@ helper('permission');
                             <tbody>
                                 <?php foreach ($sale['details'] as $detail): ?>
                                     <tr>
-                                        <td><?= esc($detail['product_code']) ?></td>
-                                        <td><?= esc($detail['product_name']) ?></td>
+                                        <td>
+                                            <a href="<?= base_url('products/view/' . $detail['product_id']) ?>"
+                                                target="_blank">
+                                                <?= esc($detail['product_code']) ?>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <?= esc($detail['product_name']) ?>
+                                            <?php if (!empty($detail['description'])): ?>
+                                                <br><small class="text-muted"><?= nl2br(esc($detail['description'])) ?></small>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?= $detail['quantity'] ?></td>
                                         <td>$<?= number_format($detail['price'], 2) ?></td>
                                         <td>$<?= number_format($detail['subtotal'], 2) ?></td>
@@ -91,7 +117,8 @@ helper('permission');
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-right"><strong>TOTAL:</strong></td>
-                                    <td><strong class="text-primary">$<?= number_format($sale['total'], 2) ?></strong></td>
+                                    <td><strong class="text-primary">$<?= number_format($sale['total'], 2) ?></strong>
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -102,4 +129,9 @@ helper('permission');
     </div>
 </div>
 
+<script>
+    function openTicket(url) {
+        window.open(url, 'Ticket', 'width=400,height=600,scrollbars=yes');
+    }
+</script>
 <?php echo view('templates/footer'); ?>

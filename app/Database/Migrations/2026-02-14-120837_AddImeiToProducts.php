@@ -10,19 +10,19 @@ class AddImeiToProducts extends Migration
     {
         $fields = [
             'imei1' => [
-                'type'       => 'VARCHAR',
+                'type' => 'VARCHAR',
                 'constraint' => '50',
-                'unique'     => true,
-                'null'       => true,
+                'unique' => true,
+                'null' => true,
             ],
             'imei2' => [
-                'type'       => 'VARCHAR',
+                'type' => 'VARCHAR',
                 'constraint' => '50',
-                'unique'     => true,
-                'null'       => true,
+                'unique' => true,
+                'null' => true,
             ],
         ];
-        $this->forge->addColumn('products', $fields);
+        // $this->forge->addColumn('products', $fields);
     }
 
     public function down()

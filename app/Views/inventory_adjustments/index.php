@@ -1,11 +1,14 @@
-<?php 
-$extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]); 
+<?php
+$extraCSS = [
+    'assets/css/dashboard.css',
+    'https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css'
+];
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 ?>
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -29,7 +32,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table id="adjustmentsTable" class="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
@@ -43,13 +46,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($adjustments)): ?>
-                                    <tr>
-                                        <td colspan="8" class="text-center text-muted">
-                                            No hay ajustes de inventario registrados
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
+                                <?php if (!empty($adjustments)): ?>
                                     <?php foreach ($adjustments as $adjustment): ?>
                                         <tr>
                                             <td><?= date('d/m/Y H:i', strtotime($adjustment['created_at'])) ?></td>
@@ -69,7 +66,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             <td><strong><?= $adjustment['new_stock'] ?></strong></td>
                                             <td><?= esc($adjustment['username']) ?></td>
                                             <td>
-                                                <a href="<?= base_url('inventory-adjustments/view/' . $adjustment['id']) ?>" class="btn btn-sm btn-primary">
+                                                <a href="<?= base_url('inventory-adjustments/view/' . $adjustment['id']) ?>"
+                                                    class="btn btn-sm btn-primary">
                                                     👁️ Ver
                                                 </a>
                                             </td>
@@ -85,4 +83,19 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
     </div>
 </div>
 
-<?php echo view('templates/footer'); ?>
+<?php
+$extraJS = [
+    'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js',
+    'https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js'
+];
+$scripts = "
+<script>
+    $(document).ready(function () {
+        $('#adjustmentsTable').DataTable({
+            'order': [[0, 'desc']] // Sort by Date descending
+        });
+    });
+</script>
+";
+echo view('templates/footer', ['extraJS' => $extraJS, 'scripts' => $scripts]);
+?>

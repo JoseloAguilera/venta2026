@@ -44,13 +44,22 @@ class Suppliers extends BaseController
         require_permission('suppliers', 'insert');
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => 'required|min_length[3]|max_length[200]',
             'document' => 'permit_empty|max_length[50]',
             'phone' => 'permit_empty|max_length[50]',
             'email' => 'permit_empty|valid_email',
             'address' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 200 caracteres'
+            ],
+            'email' => [
+                'valid_email' => 'El correo electrónico no es válido'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -78,7 +87,7 @@ class Suppliers extends BaseController
         require_permission('suppliers', 'update');
 
         $supplier = $this->supplierModel->find($id);
-        
+
         if (!$supplier) {
             return redirect()->to('/suppliers')->with('error', 'Proveedor no encontrado');
         }
@@ -97,13 +106,22 @@ class Suppliers extends BaseController
         require_permission('suppliers', 'update');
 
         $validation = \Config\Services::validation();
-        
+
         $validation->setRules([
             'name' => 'required|min_length[3]|max_length[200]',
             'document' => 'permit_empty|max_length[50]',
             'phone' => 'permit_empty|max_length[50]',
             'email' => 'permit_empty|valid_email',
             'address' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 200 caracteres'
+            ],
+            'email' => [
+                'valid_email' => 'El correo electrónico no es válido'
+            ]
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -130,6 +148,12 @@ class Suppliers extends BaseController
         // Check delete permission
         require_permission('suppliers', 'delete');
 
+        // Check if supplier has purchases
+        $purchaseModel = new \App\Models\PurchaseModel();
+        if ($purchaseModel->where('supplier_id', $id)->countAllResults() > 0) {
+            return redirect()->to('/suppliers')->with('error', 'No se puede eliminar el proveedor porque tiene compras asociadas');
+        }
+
         if ($this->supplierModel->delete($id)) {
             return redirect()->to('/suppliers')->with('success', 'Proveedor eliminado correctamente');
         } else {
@@ -140,7 +164,7 @@ class Suppliers extends BaseController
     public function account($id)
     {
         $supplier = $this->supplierModel->find($id);
-        
+
         if (!$supplier) {
             return redirect()->to('/suppliers')->with('error', 'Proveedor no encontrado');
         }

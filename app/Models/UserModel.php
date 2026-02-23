@@ -6,50 +6,50 @@ use CodeIgniter\Model;
 
 class UserModel extends Model
 {
-    protected $table            = 'users';
-    protected $primaryKey       = 'id';
+    protected $table = 'users';
+    protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = ['username', 'email', 'password', 'role', 'role_id'];
+    protected $returnType = 'array';
+    protected $useSoftDeletes = false;
+    protected $protectFields = true;
+    protected $allowedFields = ['username', 'email', 'password', 'role', 'role_id', 'active'];
 
     // Dates
     protected $useTimestamps = true;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
+    protected $dateFormat = 'datetime';
+    protected $createdField = 'created_at';
+    protected $updatedField = 'updated_at';
 
     // Validation
-    protected $validationRules      = [
+    protected $validationRules = [
         'username' => 'required|min_length[3]|max_length[50]|is_unique[users.username,id,{id}]',
-        'email'    => 'required|valid_email|is_unique[users.email,id,{id}]',
+        'email' => 'required|valid_email|is_unique[users.email,id,{id}]',
         'password' => 'required|min_length[6]',
-        'role_id'  => 'permit_empty|is_natural_no_zero'
+        'role_id' => 'permit_empty|is_natural_no_zero'
     ];
-    protected $validationMessages   = [
+    protected $validationMessages = [
         'username' => [
-            'required'    => 'El nombre de usuario es requerido',
-            'min_length'  => 'El nombre de usuario debe tener al menos 3 caracteres',
-            'is_unique'   => 'Este nombre de usuario ya está en uso'
+            'required' => 'El nombre de usuario es requerido',
+            'min_length' => 'El nombre de usuario debe tener al menos 3 caracteres',
+            'is_unique' => 'Este nombre de usuario ya está en uso'
         ],
         'email' => [
-            'required'     => 'El email es requerido',
-            'valid_email'  => 'Debe proporcionar un email válido',
-            'is_unique'    => 'Este email ya está registrado'
+            'required' => 'El email es requerido',
+            'valid_email' => 'Debe proporcionar un email válido',
+            'is_unique' => 'Este email ya está registrado'
         ],
         'password' => [
-            'required'    => 'La contraseña es requerida',
-            'min_length'  => 'La contraseña debe tener al menos 6 caracteres'
+            'required' => 'La contraseña es requerida',
+            'min_length' => 'La contraseña debe tener al menos 6 caracteres'
         ]
     ];
-    protected $skipValidation       = false;
+    protected $skipValidation = false;
     protected $cleanValidationRules = true;
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = ['hashPassword'];
-    protected $beforeUpdate   = ['hashPassword'];
+    protected $beforeInsert = ['hashPassword'];
+    protected $beforeUpdate = ['hashPassword'];
 
     /**
      * Hash password before insert/update
@@ -68,8 +68,8 @@ class UserModel extends Model
     public function verifyCredentials(string $username, string $password)
     {
         $user = $this->where('username', $username)
-                     ->orWhere('email', $username)
-                     ->first();
+            ->orWhere('email', $username)
+            ->first();
 
         if ($user && password_verify($password, $user['password'])) {
             return $user;
@@ -110,9 +110,9 @@ class UserModel extends Model
     public function getUserWithRole($userId)
     {
         return $this->select('users.*, roles.name as role_name, roles.id as role_id')
-                    ->join('roles', 'roles.id = users.role_id', 'left')
-                    ->where('users.id', $userId)
-                    ->first();
+            ->join('roles', 'roles.id = users.role_id', 'left')
+            ->where('users.id', $userId)
+            ->first();
     }
 
     /**
@@ -121,7 +121,7 @@ class UserModel extends Model
     public function getRolePermissions($userId)
     {
         $user = $this->find($userId);
-        
+
         if (!$user || !isset($user['role_id'])) {
             return [];
         }

@@ -1,31 +1,31 @@
-<?php 
+<?php
 $extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]); 
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 ?>
 
 <style>
     /* Modal Styles */
     .modal {
-        display: none; 
-        position: fixed; 
-        z-index: 1000; 
+        display: none;
+        position: fixed;
+        z-index: 1000;
         left: 0;
         top: 0;
-        width: 100%; 
-        height: 100%; 
-        overflow: auto; 
-        background-color: rgba(0,0,0,0.5); 
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
     }
 
     .modal-content {
         background-color: #fefefe;
-        margin: 10% auto; 
+        margin: 10% auto;
         padding: 20px;
         border: 1px solid #888;
-        width: 80%; 
+        width: 80%;
         max-width: 800px;
         border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .modal-header {
@@ -70,7 +70,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
     .product-card:hover {
         border-color: var(--primary-color);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .product-card.low-stock {
@@ -88,7 +88,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -108,7 +108,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                     <form action="<?= base_url('sales/store') ?>" method="POST" id="saleForm">
                         <?= csrf_field() ?>
-                        
+
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -136,10 +136,12 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                         <select id="customer_id" name="customer_id" class="form-control" required>
                                             <option value="">Seleccione un cliente</option>
                                             <?php foreach ($customers as $customer): ?>
-                                                <option value="<?= $customer['id'] ?>"><?= esc($customer['name']) ?></option>
+                                                <option value="<?= $customer['id'] ?>"><?= esc($customer['name']) ?>
+                                                </option>
                                             <?php endforeach; ?>
                                         </select>
-                                        <button type="button" class="btn btn-secondary" id="openCustomerModal" title="Nuevo Cliente">➕</button>
+                                        <button type="button" class="btn btn-secondary" id="openCustomerModal"
+                                            title="Nuevo Cliente">➕</button>
                                     </div>
                                 </div>
                             </div>
@@ -161,8 +163,9 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 ➕ Agregar Producto
                             </button>
                         </div>
-                        <p class="text-muted small" id="warehouse-hint">Seleccione un depósito primero para agregar productos.</p>
-                        
+                        <p class="text-muted small" id="warehouse-hint">Seleccione un depósito primero para agregar
+                            productos.</p>
+
                         <div class="table-responsive">
                             <table class="table table-bordered" id="productsTable">
                                 <thead>
@@ -170,6 +173,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                         <th>Producto</th>
                                         <th width="150">Cantidad</th>
                                         <th width="150">Precio</th>
+                                        <th width="200">Observación</th>
                                         <th width="150">Subtotal</th>
                                         <th width="50"></th>
                                     </tr>
@@ -211,7 +215,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
             <span class="modal-close" id="closeProductModal">&times;</span>
         </div>
         <div class="modal-body">
-            <input type="text" id="productSearch" class="search-box" placeholder="Buscar producto por nombre o código..." autocomplete="off">
+            <input type="text" id="productSearch" class="search-box"
+                placeholder="Buscar producto por nombre o código..." autocomplete="off">
 
             <div class="product-grid" id="productGrid">
                 <!-- Products will be loaded via AJAX -->
@@ -229,7 +234,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
             <span class="modal-close" id="closeAuthModal">&times;</span>
         </div>
         <div class="modal-body">
-            <p>El precio ingresado es menor al precio mínimo permitido. Ingrese la contraseña de autorización para continuar.</p>
+            <p>El precio ingresado es menor al precio mínimo permitido. Ingrese la contraseña de autorización para
+                continuar.</p>
             <div class="form-group">
                 <input type="password" id="modalAuthPassword" class="form-control" placeholder="Contraseña">
                 <div id="authError" class="text-danger small mt-1" style="display:none;">Contraseña incorrecta</div>
@@ -274,121 +280,160 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Modal Elements
-    const productModal = document.getElementById('productModal');
-    const authModal = document.getElementById('authModal');
-    const customerModal = document.getElementById('customerModal');
-    
-    const openProductBtn = document.getElementById('openProductModal');
-    const openCustomerBtn = document.getElementById('openCustomerModal');
-    
-    const closeProductBtn = document.getElementById('closeProductModal');
-    const closeAuthBtn = document.getElementById('closeAuthModal');
-    const closeCustomerBtn = document.getElementById('closeCustomerModal');
-    
-    const cancelAuthBtn = document.getElementById('cancelAuth');
-    const cancelCustomerBtn = document.getElementById('cancelCustomer');
-    
-    const confirmAuthBtn = document.getElementById('confirmAuth');
-    
-    // Search & Grid
-    const productSearch = document.getElementById('productSearch');
-    const productGrid = document.getElementById('productGrid');
-    const productCards = document.querySelectorAll('.product-card');
+    document.addEventListener('DOMContentLoaded', function () {
+        // Modal Elements
+        const productModal = document.getElementById('productModal');
+        const authModal = document.getElementById('authModal');
+        const customerModal = document.getElementById('customerModal');
 
-    // Sale Form
-    const productsContainer = document.getElementById('products-container');
-    const emptyMessage = document.getElementById('empty-message');
-    const totalAmountSpan = document.getElementById('totalAmount');
-    const form = document.getElementById('saleForm');
-    const customerForm = document.getElementById('customerForm');
-    const customerSelect = document.getElementById('customer_id');
+        const openProductBtn = document.getElementById('openProductModal');
+        const openCustomerBtn = document.getElementById('openCustomerModal');
 
-    // Warehouse
-    const warehouseSelect = document.getElementById('warehouse_id');
-    const warehouseHint = document.getElementById('warehouse-hint');
+        const closeProductBtn = document.getElementById('closeProductModal');
+        const closeAuthBtn = document.getElementById('closeAuthModal');
+        const closeCustomerBtn = document.getElementById('closeCustomerModal');
 
-    // State
-    let currentEditingInput = null;
-    let originalPrice = 0;
+        const cancelAuthBtn = document.getElementById('cancelAuth');
+        const cancelCustomerBtn = document.getElementById('cancelCustomer');
 
-    // --- Warehouse Logic ---
-    warehouseSelect.addEventListener('change', function() {
-        if (this.value) {
-            openProductBtn.disabled = false;
-            warehouseHint.style.display = 'none';
-        } else {
-            openProductBtn.disabled = true;
-            warehouseHint.style.display = 'block';
-        }
+        const confirmAuthBtn = document.getElementById('confirmAuth');
 
-        // Clear products if warehouse changes because stock/prices might differ (simplified)
-        // Or at least warn. For now, let's clear to be safe.
-        if (productsContainer.children.length > 0) {
-            if (confirm('Al cambiar de depósito se eliminarán los productos agregados. ¿Desea continuar?')) {
-                productsContainer.innerHTML = '';
-                emptyMessage.style.display = 'block';
-                calculateTotal();
+        // Search & Grid
+        const productSearch = document.getElementById('productSearch');
+        const productGrid = document.getElementById('productGrid');
+        const productCards = document.querySelectorAll('.product-card');
+
+        // Sale Form
+        const productsContainer = document.getElementById('products-container');
+        const emptyMessage = document.getElementById('empty-message');
+        const totalAmountSpan = document.getElementById('totalAmount');
+        const form = document.getElementById('saleForm');
+        const customerForm = document.getElementById('customerForm');
+        const customerSelect = document.getElementById('customer_id');
+
+        // Warehouse
+        const warehouseSelect = document.getElementById('warehouse_id');
+        const warehouseHint = document.getElementById('warehouse-hint');
+
+        // State
+        let currentEditingInput = null;
+        let originalPrice = 0;
+        let previousWarehouseValue = warehouseSelect.value;
+
+        // --- Helper to update button state (Modified: Button always enabled, just visual cue) ---
+        function updateProductButtonState() {
+            // We no longer disable the button, so users can click and get the validation message
+            if (warehouseSelect.value && warehouseSelect.value !== "") {
+                openProductBtn.classList.remove('btn-secondary');
+                openProductBtn.classList.add('btn-primary');
+                warehouseHint.style.display = 'none';
             } else {
-                // Revert selection if possible, or just keep it (native select doesn't easily revert without tracking previous value)
-                // For simplicity, we just clear without asking or assume user knows. 
-                // Let's rely on the user manually re-adding.
-                productsContainer.innerHTML = '';
-                emptyMessage.style.display = 'block';
-                calculateTotal();
+                openProductBtn.classList.remove('btn-primary');
+                openProductBtn.classList.add('btn-secondary');
+                warehouseHint.style.display = 'block';
             }
         }
-    });
 
-    // --- Search Logic ---
-    let debounceTimer;
-    productSearch.addEventListener('keyup', function() {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            fetchProducts(this.value);
-        }, 300);
-    });
+        // --- Initial Check ---
+        // Ensure button is enabled to allow validation click
+        openProductBtn.disabled = false;
+        updateProductButtonState();
 
-    function fetchProducts(term = '') {
-        const warehouseId = warehouseSelect.value;
-        if (!warehouseId) {
-            alert('Seleccione un depósito primero');
-            return;
+        // Track previous value for reverting
+        $(warehouseSelect).on('select2:opening', function (e) {
+            previousWarehouseValue = warehouseSelect.value;
+        });
+        // Fallback for native focus if select2 hidden input interaction varies
+        warehouseSelect.addEventListener('focus', function () {
+            previousWarehouseValue = this.value;
+        });
+
+        // --- Warehouse Logic ---
+        function handleWarehouseChange(newValue, revertCallback) {
+            if (productsContainer.children.length > 0) {
+                if (confirm('⚠️ ADVERTENCIA: Al cambiar de depósito se eliminarán los productos agregados a la venta.\n\n¿Está seguro que desea continuar?')) {
+                    // User confirmed: Clear products
+                    productsContainer.innerHTML = '';
+                    emptyMessage.style.display = 'block';
+                    calculateTotal();
+                    previousWarehouseValue = newValue;
+                    updateProductButtonState();
+                } else {
+                    // User cancelled: Revert
+                    revertCallback();
+                }
+            } else {
+                // No products, just update
+                previousWarehouseValue = newValue;
+                updateProductButtonState();
+            }
         }
 
-        productGrid.innerHTML = '<div class="text-center p-3 text-muted">Cargando...</div>';
-        
-        // Pass warehouse_id to get specific stock
-        fetch(`<?= base_url('sales/search-products') ?>?term=${encodeURIComponent(term)}&warehouse_id=${warehouseId}`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(products => {
-            productGrid.innerHTML = '';
-            
-            if (products.length === 0) {
-                productGrid.innerHTML = '<div class="text-center p-3 text-muted">No se encontraron productos</div>';
+        // Listen to jQuery change (Select2)
+        $(warehouseSelect).on('change', function (e) {
+            // Did the value actually change?
+            if (this.value === previousWarehouseValue) return;
+
+            const newValue = this.value;
+            const self = this;
+
+            handleWarehouseChange(newValue, function () {
+                // Revert logic for Select2
+                $(self).val(previousWarehouseValue).trigger('change.select2');
+            });
+        });
+
+        // Note: We remove the native 'change' listener to avoid double-firing with Select2
+        // warehouseSelect.addEventListener('change', ...) -> Removed in favor of Select2 handler which covers both
+        // --- Search Logic ---
+        let debounceTimer;
+        productSearch.addEventListener('keyup', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchProducts(this.value);
+            }, 300);
+        });
+
+        function fetchProducts(term = '') {
+            const warehouseId = warehouseSelect.value;
+            if (!warehouseId) {
                 return;
             }
 
-            products.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                if (parseInt(product.stock) <= 10) card.classList.add('low-stock');
-                
-                // Data attributes
-                card.dataset.id = product.id;
-                card.dataset.name = product.name;
-                card.dataset.price = product.price;
-                card.dataset.minPrice = product.min_sale_price;
-                card.dataset.stock = product.stock; // This is now warehouse_stock thanks to controller override
-                
-                card.innerHTML = `
+            productGrid.innerHTML = '<div class="text-center p-3 text-muted">Cargando...</div>';
+
+            // Pass warehouse_id to get specific stock
+            fetch(`<?= base_url('sales/search-products') ?>?term=${encodeURIComponent(term)}&warehouse_id=${warehouseId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(products => {
+                    productGrid.innerHTML = '';
+
+                    if (products.length === 0) {
+                        productGrid.innerHTML = '<div class="text-center p-3 text-muted">No se encontraron productos</div>';
+                        return;
+                    }
+
+                    products.forEach(product => {
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        if (parseInt(product.stock) <= 10) card.classList.add('low-stock');
+
+                        // Data attributes
+                        card.dataset.id = product.id;
+                        card.dataset.name = product.name;
+                        card.dataset.price = product.price;
+                        card.dataset.minPrice = product.min_sale_price;
+                        card.dataset.stock = product.stock; // This is now warehouse_stock thanks to controller override
+
+                        card.innerHTML = `
                     <div style="font-weight: bold;">${escapeHtml(product.name)}</div>
                     <div class="text-muted small">Code: ${escapeHtml(product.code)}</div>
+                    ${product.imei1 ? `<div class="text-muted small">IMEI 1: ${escapeHtml(product.imei1)}</div>` : ''}
+                    ${product.imei2 ? `<div class="text-muted small">IMEI 2: ${escapeHtml(product.imei2)}</div>` : ''}
                     <div class="d-flex justify-content-between mt-2">
                         <span class="text-primary">$${parseFloat(product.price).toFixed(2)}</span>
                         <span class="badge ${parseInt(product.stock) <= 10 ? 'badge-danger' : 'badge-success'}">
@@ -396,114 +441,130 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                     </div>
                 `;
-                
-                card.onclick = () => addProductToSale(card);
-                productGrid.appendChild(card);
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            productGrid.innerHTML = '<div class="text-center p-3 text-danger">Error al cargar productos</div>';
-        });
-    }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // --- Modal Logic ---
-    openProductBtn.onclick = () => {
-        if (!warehouseSelect.value) {
-            alert('Seleccione un depósito primero');
-            return;
+                        card.onclick = () => addProductToSale(card);
+                        productGrid.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    productGrid.innerHTML = '<div class="text-center p-3 text-danger">Error al cargar productos</div>';
+                });
         }
-        productModal.style.display = "block";
-        productSearch.value = ''; // Clear search
-        fetchProducts(); // Load initial products
-    };
-    closeProductBtn.onclick = () => productModal.style.display = "none";
-    
-    if (openCustomerBtn) {
-        openCustomerBtn.onclick = () => {
-            customerModal.style.display = "block";
-            customerForm.reset();
-            document.getElementById('customerError').style.display = 'none';
-        };
-    }
-    
-    closeCustomerBtn.onclick = () => customerModal.style.display = "none";
-    cancelCustomerBtn.onclick = () => customerModal.style.display = "none";
-    
-    closeAuthBtn.onclick = cancelAuth;
-    cancelAuthBtn.onclick = cancelAuth;
 
-    window.onclick = (event) => {
-        if (event.target == productModal) productModal.style.display = "none";
-        if (event.target == authModal) cancelAuth();
-        if (event.target == customerModal) customerModal.style.display = "none";
-    }
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-    // --- Customer Logic ---
-    customerForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        fetch('<?= base_url('customers/ajax-store') ?>', {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Add new option and select it
-                const option = new Option(data.customer.name, data.customer.id);
-                customerSelect.add(option, undefined);
-                customerSelect.value = data.customer.id;
-                
-                customerModal.style.display = "none";
-                alert('Cliente creado exitosamente');
-            } else {
-                const errorDiv = document.getElementById('customerError');
-                errorDiv.innerHTML = Object.values(data.errors).join('<br>');
-                errorDiv.style.display = 'block';
+        // --- Modal Logic ---
+        openProductBtn.onclick = () => {
+            if (!warehouseSelect.value) {
+                // Remove alert, use visual feedback
+                // alert('Seleccione un depósito primero');
+
+                // Highlight the select
+                warehouseSelect.classList.add('is-invalid');
+                warehouseSelect.focus();
+
+                // Try to open Select2 if present
+                if ($(warehouseSelect).data('select2')) {
+                    $(warehouseSelect).select2('open');
+                }
+
+                // Remove highlight after a few seconds
+                setTimeout(() => {
+                    warehouseSelect.classList.remove('is-invalid');
+                }, 2000);
+
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error de conexión');
+            productModal.style.display = "block";
+            productSearch.value = ''; // Clear search
+            fetchProducts(); // Load initial products
+        };
+        closeProductBtn.onclick = () => productModal.style.display = "none";
+
+        if (openCustomerBtn) {
+            openCustomerBtn.onclick = () => {
+                customerModal.style.display = "block";
+                customerForm.reset();
+                document.getElementById('customerError').style.display = 'none';
+            };
+        }
+
+        closeCustomerBtn.onclick = () => customerModal.style.display = "none";
+        cancelCustomerBtn.onclick = () => customerModal.style.display = "none";
+
+        closeAuthBtn.onclick = cancelAuth;
+        cancelAuthBtn.onclick = cancelAuth;
+
+        window.onclick = (event) => {
+            if (event.target == productModal) productModal.style.display = "none";
+            if (event.target == authModal) cancelAuth();
+            if (event.target == customerModal) customerModal.style.display = "none";
+        }
+
+        // --- Customer Logic ---
+        customerForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('<?= base_url('customers/ajax-store') ?>', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Add new option and select it
+                        const option = new Option(data.customer.name, data.customer.id);
+                        customerSelect.add(option, undefined);
+                        customerSelect.value = data.customer.id;
+
+                        customerModal.style.display = "none";
+                        alert('Cliente creado exitosamente');
+                    } else {
+                        const errorDiv = document.getElementById('customerError');
+                        errorDiv.innerHTML = Object.values(data.errors).join('<br>');
+                        errorDiv.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión');
+                });
         });
-    });
 
 
 
-    // --- Product Logic ---
-    window.addProductToSale = function(card) {
-        const id = card.dataset.id;
-        const name = card.dataset.name;
-        const price = parseFloat(card.dataset.price);
-        const minPrice = parseFloat(card.dataset.minPrice);
-        const stock = parseInt(card.dataset.stock);
+        // --- Product Logic ---
+        window.addProductToSale = function (card) {
+            const id = card.dataset.id;
+            const name = card.dataset.name;
+            const price = parseFloat(card.dataset.price);
+            const minPrice = parseFloat(card.dataset.minPrice);
+            const stock = parseInt(card.dataset.stock);
 
-        if (stock <= 0) {
-            alert('Este producto no tiene stock disponible en el depósito seleccionado');
-            return;
-        }
+            if (stock <= 0) {
+                alert('Este producto no tiene stock disponible en el depósito seleccionado');
+                return;
+            }
 
-        // Check if already added
-        if (document.querySelector(`tr[data-id="${id}"]`)) {
-            alert('Este producto ya está en la lista');
-            return;
-        }
+            // Check if already added
+            if (document.querySelector(`tr[data-id="${id}"]`)) {
+                alert('Este producto ya está en la lista');
+                return;
+            }
 
-        const row = document.createElement('tr');
-        row.dataset.id = id;
-        row.innerHTML = `
+            const row = document.createElement('tr');
+            row.dataset.id = id;
+            row.innerHTML = `
             <td>
                 <strong>${name}</strong>
                 <input type="hidden" name="products[${id}][product_id]" value="${id}">
@@ -515,6 +576,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="number" name="products[${id}][price]" class="form-control price-input" value="${price.toFixed(2)}" step="0.01" data-min="${minPrice}">
             </td>
             <td>
+                <textarea name="products[${id}][description]" class="form-control" rows="2" style="font-size: 0.85rem;">IMEI: </textarea>
+            </td>
+            <td>
                 <input type="text" class="form-control subtotal-display" value="$${price.toFixed(2)}" readonly>
             </td>
             <td>
@@ -522,136 +586,136 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
         `;
 
-        productsContainer.appendChild(row);
-        emptyMessage.style.display = 'none';
-        productModal.style.display = 'none';
-        
-        attachRowEvents(row);
-        calculateTotal();
-    };
+            productsContainer.appendChild(row);
+            emptyMessage.style.display = 'none';
+            productModal.style.display = 'none';
 
-    function attachRowEvents(row) {
-        const qtyInput = row.querySelector('.quantity-input');
-        const priceInput = row.querySelector('.price-input');
-        const removeBtn = row.querySelector('.remove-btn');
-
-        qtyInput.addEventListener('input', () => updateSubtotal(row));
-        
-        // Price Validation Logic
-        priceInput.addEventListener('focus', function() {
-            originalPrice = this.value;
-        });
-
-        priceInput.addEventListener('change', function() {
-            const newPrice = parseFloat(this.value) || 0;
-            const minPrice = parseFloat(this.dataset.min);
-
-            if (newPrice < minPrice) {
-                currentEditingInput = this;
-                showAuthModal();
-            } else {
-                updateSubtotal(row);
-            }
-        });
-
-        removeBtn.addEventListener('click', function() {
-            row.remove();
-            if (productsContainer.children.length === 0) {
-                emptyMessage.style.display = 'block';
-            }
+            attachRowEvents(row);
             calculateTotal();
-        });
-    }
+        };
 
-    function updateSubtotal(row) {
-        const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
-        const price = parseFloat(row.querySelector('.price-input').value) || 0;
-        const subtotal = qty * price;
-        row.querySelector('.subtotal-display').value = '$' + subtotal.toFixed(2);
-        calculateTotal();
-    }
+        function attachRowEvents(row) {
+            const qtyInput = row.querySelector('.quantity-input');
+            const priceInput = row.querySelector('.price-input');
+            const removeBtn = row.querySelector('.remove-btn');
 
-    function calculateTotal() {
-        let total = 0;
-        document.querySelectorAll('#products-container tr').forEach(row => {
+            qtyInput.addEventListener('input', () => updateSubtotal(row));
+
+            // Price Validation Logic
+            priceInput.addEventListener('focus', function () {
+                originalPrice = this.value;
+            });
+
+            priceInput.addEventListener('change', function () {
+                const newPrice = parseFloat(this.value) || 0;
+                const minPrice = parseFloat(this.dataset.min);
+
+                if (newPrice < minPrice) {
+                    currentEditingInput = this;
+                    showAuthModal();
+                } else {
+                    updateSubtotal(row);
+                }
+            });
+
+            removeBtn.addEventListener('click', function () {
+                row.remove();
+                if (productsContainer.children.length === 0) {
+                    emptyMessage.style.display = 'block';
+                }
+                calculateTotal();
+            });
+        }
+
+        function updateSubtotal(row) {
             const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
             const price = parseFloat(row.querySelector('.price-input').value) || 0;
-            total += qty * price;
-        });
-        totalAmountSpan.textContent = total.toFixed(2);
-    }
-
-    // --- Auth Logic ---
-    function showAuthModal() {
-        authModal.style.display = "block";
-        document.getElementById('modalAuthPassword').value = '';
-        document.getElementById('authError').style.display = 'none';
-        document.getElementById('modalAuthPassword').focus();
-    }
-
-    function cancelAuth() {
-        authModal.style.display = "none";
-        if (currentEditingInput) {
-            currentEditingInput.value = originalPrice; // Revert price
-            // Trigger update to fix subtotal
-            const row = currentEditingInput.closest('tr');
-            updateSubtotal(row);
-            currentEditingInput = null;
+            const subtotal = qty * price;
+            row.querySelector('.subtotal-display').value = '$' + subtotal.toFixed(2);
+            calculateTotal();
         }
-    }
 
-    confirmAuthBtn.addEventListener('click', function() {
-        const password = document.getElementById('modalAuthPassword').value;
-        
-        // AJAX Validation
-        fetch('<?= base_url('sales/validate-auth') ?>', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: 'password=' + encodeURIComponent(password)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.valid) {
-                authModal.style.display = "none";
-                document.getElementById('auth_password').value = password; // Store for backend validation
-                
-                // Update subtotal with the new (lower) price
-                if (currentEditingInput) {
-                    const row = currentEditingInput.closest('tr');
-                    updateSubtotal(row);
-                    
-                    // Visual feedback
-                    currentEditingInput.style.backgroundColor = '#d4edda';
-                    currentEditingInput.style.borderColor = '#c3e6cb';
-                }
+        function calculateTotal() {
+            let total = 0;
+            document.querySelectorAll('#products-container tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                total += qty * price;
+            });
+            totalAmountSpan.textContent = total.toFixed(2);
+        }
+
+        // --- Auth Logic ---
+        function showAuthModal() {
+            authModal.style.display = "block";
+            document.getElementById('modalAuthPassword').value = '';
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('modalAuthPassword').focus();
+        }
+
+        function cancelAuth() {
+            authModal.style.display = "none";
+            if (currentEditingInput) {
+                currentEditingInput.value = originalPrice; // Revert price
+                // Trigger update to fix subtotal
+                const row = currentEditingInput.closest('tr');
+                updateSubtotal(row);
                 currentEditingInput = null;
-            } else {
-                document.getElementById('authError').style.display = 'block';
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error de conexión');
+        }
+
+        confirmAuthBtn.addEventListener('click', function () {
+            const password = document.getElementById('modalAuthPassword').value;
+
+            // AJAX Validation
+            fetch('<?= base_url('sales/validate-auth') ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'password=' + encodeURIComponent(password)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.valid) {
+                        authModal.style.display = "none";
+                        document.getElementById('auth_password').value = password; // Store for backend validation
+
+                        // Update subtotal with the new (lower) price
+                        if (currentEditingInput) {
+                            const row = currentEditingInput.closest('tr');
+                            updateSubtotal(row);
+
+                            // Visual feedback
+                            currentEditingInput.style.backgroundColor = '#d4edda';
+                            currentEditingInput.style.borderColor = '#c3e6cb';
+                        }
+                        currentEditingInput = null;
+                    } else {
+                        document.getElementById('authError').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión');
+                });
+        });
+
+        // Form Validation
+        form.addEventListener('submit', function (e) {
+            if (!warehouseSelect.value) {
+                e.preventDefault();
+                alert('Seleccione un depósito');
+                return;
+            }
+
+            if (productsContainer.children.length === 0) {
+                e.preventDefault();
+                alert('Debe agregar al menos un producto');
+            }
         });
     });
-
-    // Form Validation
-    form.addEventListener('submit', function(e) {
-        if (!warehouseSelect.value) {
-            e.preventDefault();
-            alert('Seleccione un depósito');
-            return;
-        }
-
-        if (productsContainer.children.length === 0) {
-            e.preventDefault();
-            alert('Debe agregar al menos un producto');
-        }
-    });
-});
 </script>
 
 <?php echo view('templates/footer'); ?>

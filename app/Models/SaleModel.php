@@ -6,30 +6,30 @@ use CodeIgniter\Model;
 
 class SaleModel extends Model
 {
-    protected $table            = 'sales';
-    protected $primaryKey       = 'id';
+    protected $table = 'sales';
+    protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
-    protected $protectFields    = true;
-    protected $allowedFields    = ['customer_id', 'user_id', 'warehouse_id', 'sale_number', 'date', 'payment_type', 'subtotal', 'tax', 'total', 'status'];
+    protected $returnType = 'array';
+    protected $useSoftDeletes = false;
+    protected $protectFields = true;
+    protected $allowedFields = ['customer_id', 'user_id', 'warehouse_id', 'sale_number', 'date', 'payment_type', 'subtotal', 'tax', 'total', 'status'];
 
     // Dates
     protected $useTimestamps = true;
-    protected $dateFormat    = 'datetime';
-    protected $createdField  = 'created_at';
-    protected $updatedField  = '';
+    protected $dateFormat = 'datetime';
+    protected $createdField = 'created_at';
+    protected $updatedField = '';
 
     // Validation
-    protected $validationRules      = [
-        'customer_id'  => 'required|is_natural_no_zero',
-        'user_id'      => 'required|is_natural_no_zero',
-        'sale_number'  => 'required|is_unique[sales.sale_number,id,{id}]',
-        'date'         => 'required|valid_date',
+    protected $validationRules = [
+        'customer_id' => 'required|is_natural_no_zero',
+        'user_id' => 'required|is_natural_no_zero',
+        'sale_number' => 'required|is_unique[sales.sale_number,id,{id}]',
+        'date' => 'required|valid_date',
         'payment_type' => 'required|in_list[cash,credit]',
-        'total'        => 'required|decimal'
+        'total' => 'required|decimal'
     ];
-    protected $skipValidation       = false;
+    protected $skipValidation = false;
     protected $cleanValidationRules = true;
 
     /**
@@ -38,10 +38,10 @@ class SaleModel extends Model
     public function getSalesWithDetails()
     {
         return $this->select('sales.*, customers.name as customer_name, users.username as user_name')
-                    ->join('customers', 'customers.id = sales.customer_id')
-                    ->join('users', 'users.id = sales.user_id')
-                    ->orderBy('sales.date', 'DESC')
-                    ->findAll();
+            ->join('customers', 'customers.id = sales.customer_id')
+            ->join('users', 'users.id = sales.user_id')
+            ->orderBy('sales.date', 'DESC')
+            ->findAll();
     }
 
     /**
@@ -50,9 +50,9 @@ class SaleModel extends Model
     public function getSaleWithDetails($saleId)
     {
         $sale = $this->select('sales.*, customers.name as customer_name, customers.document as customer_document, users.username as user_name')
-                     ->join('customers', 'customers.id = sales.customer_id')
-                     ->join('users', 'users.id = sales.user_id')
-                     ->find($saleId);
+            ->join('customers', 'customers.id = sales.customer_id')
+            ->join('users', 'users.id = sales.user_id')
+            ->find($saleId);
 
         if ($sale) {
             $db = \Config\Database::connect();
@@ -109,6 +109,25 @@ class SaleModel extends Model
         }
 
         return $this->update($saleId, ['status' => $status]);
+    }
+
+    /**
+     * Get total pending balance (accounts receivable)
+     */
+    public function getTotalReceivables()
+    {
+        $db = \Config\Database::connect();
+
+        // Sum of (total - paid) for credit sales that are not fully paid or cancelled
+        $query = $db->query("
+            SELECT SUM(s.total - COALESCE((SELECT SUM(amount) FROM customer_payments WHERE sale_id = s.id), 0)) as pending_total
+            FROM sales s
+            WHERE s.payment_type = 'credit' 
+            AND s.status != 'paid' 
+            AND s.status != 'cancelled'
+        ");
+
+        return $query->getRow()->pending_total ?? 0;
     }
 
     /**

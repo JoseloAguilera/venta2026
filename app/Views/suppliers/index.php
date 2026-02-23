@@ -1,12 +1,15 @@
-<?php 
-$extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]); 
+<?php
+$extraCSS = [
+    'assets/css/dashboard.css',
+    'https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css'
+];
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 helper('permission');
 ?>
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -14,13 +17,13 @@ helper('permission');
                 <h2><?= $title ?></h2>
             </div>
             <div class="topbar-actions">
-            <div class="topbar-actions">
-                <?php if (can_insert('suppliers')): ?>
-                <a href="<?= base_url('suppliers/create') ?>" class="btn btn-primary">
-                    ➕ Nuevo Proveedor
-                </a>
-                <?php endif; ?>
-            </div>
+                <div class="topbar-actions">
+                    <?php if (can_insert('suppliers')): ?>
+                        <a href="<?= base_url('suppliers/create') ?>" class="btn btn-primary">
+                            ➕ Nuevo Proveedor
+                        </a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
 
@@ -34,7 +37,7 @@ helper('permission');
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table id="suppliersTable" class="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
@@ -45,13 +48,7 @@ helper('permission');
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($suppliers)): ?>
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted">
-                                            No hay proveedores registrados
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
+                                <?php if (!empty($suppliers)): ?>
                                     <?php foreach ($suppliers as $supplier): ?>
                                         <tr>
                                             <td><strong><?= esc($supplier['name']) ?></strong></td>
@@ -59,22 +56,24 @@ helper('permission');
                                             <td><?= esc($supplier['phone']) ?></td>
                                             <td><?= esc($supplier['email']) ?></td>
                                             <td>
-                                            <td>
-                                                <a href="<?= base_url('suppliers/account/' . $supplier['id']) ?>" class="btn btn-sm btn-primary">
+                                                <a href="<?= base_url('suppliers/account/' . $supplier['id']) ?>"
+                                                    class="btn btn-sm btn-primary">
                                                     💰 Cuenta
                                                 </a>
                                                 <?php if (can_update('suppliers')): ?>
-                                                <a href="<?= base_url('suppliers/edit/' . $supplier['id']) ?>" class="btn btn-sm btn-secondary">
-                                                    ✏️ Editar
-                                                </a>
+                                                    <a href="<?= base_url('suppliers/edit/' . $supplier['id']) ?>"
+                                                        class="btn btn-sm btn-secondary">
+                                                        ✏️ Editar
+                                                    </a>
                                                 <?php endif; ?>
-                                                
+
                                                 <?php if (can_delete('suppliers')): ?>
-                                                <a href="<?= base_url('suppliers/delete/' . $supplier['id']) ?>" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este proveedor?')">
-                                                    🗑️ Eliminar
-                                                </a>
+                                                    <a href="<?= base_url('suppliers/delete/' . $supplier['id']) ?>"
+                                                        class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('¿Eliminar este proveedor?')">
+                                                        🗑️ Eliminar
+                                                    </a>
                                                 <?php endif; ?>
-                                            </td>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -88,4 +87,19 @@ helper('permission');
     </div>
 </div>
 
-<?php echo view('templates/footer'); ?>
+<?php
+$extraJS = [
+    'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js',
+    'https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js'
+];
+$scripts = "
+<script>
+    $(document).ready(function () {
+        $('#suppliersTable').DataTable({
+            'order': [[0, 'asc']]
+        });
+    });
+</script>
+";
+echo view('templates/footer', ['extraJS' => $extraJS, 'scripts' => $scripts]);
+?>

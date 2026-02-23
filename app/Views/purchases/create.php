@@ -1,12 +1,12 @@
 <!-- Purchases create view -->
-<?php 
+<?php
 $extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]); 
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 ?>
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -31,7 +31,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                     <form action="<?= base_url('purchases/store') ?>" method="POST" id="purchaseForm">
                         <?= csrf_field() ?>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -79,9 +79,10 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                         <hr>
                         <h4>Productos</h4>
-                        
+
                         <div id="products-container">
-                            <div class="product-row" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;">
+                            <div class="product-row"
+                                style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;">
                                 <div class="form-group" style="margin: 0;">
                                     <label class="form-label">Producto</label>
                                     <select class="form-control product-select" required>
@@ -105,7 +106,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                     <label class="form-label">Subtotal</label>
                                     <input type="text" class="form-control subtotal-display" readonly>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-danger remove-product" style="margin-top: 24px;">🗑️</button>
+                                <button type="button" class="btn btn-sm btn-danger remove-product"
+                                    style="margin-top: 24px;">🗑️</button>
                             </div>
                         </div>
 
@@ -128,103 +130,121 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('products-container');
-    const addBtn = document.getElementById('addProduct');
-    const form = document.getElementById('purchaseForm');
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('products-container');
+        const addBtn = document.getElementById('addProduct');
+        const form = document.getElementById('purchaseForm');
 
-    addBtn.addEventListener('click', function() {
-        const firstRow = container.querySelector('.product-row');
-        const newRow = firstRow.cloneNode(true);
-        newRow.querySelectorAll('input, select').forEach(input => {
-            if (!input.classList.contains('product-select')) {
+        addBtn.addEventListener('click', function () {
+            const firstRow = container.querySelector('.product-row');
+            const newRow = firstRow.cloneNode(true);
+
+            // Clean up Select2 artifacts from the clone
+            $(newRow).find('.select2-container').remove();
+            const select = $(newRow).find('select');
+            select.removeClass('select2-hidden-accessible');
+            select.removeAttr('data-select2-id');
+            select.removeAttr('tabindex');
+            select.removeAttr('aria-hidden');
+            select.find('option').removeAttr('data-select2-id');
+            select.val(''); // Reset selection
+
+            // Reset other inputs
+            newRow.querySelectorAll('input').forEach(input => {
                 input.value = input.type === 'number' ? '1' : '';
-            }
-        });
-        container.appendChild(newRow);
-        attachRowEvents(newRow);
-    });
+            });
 
-    function attachRowEvents(row) {
-        const productSelect = row.querySelector('.product-select');
-        const quantityInput = row.querySelector('.quantity-input');
-        const priceInput = row.querySelector('.price-input');
-        const subtotalDisplay = row.querySelector('.subtotal-display');
-        const removeBtn = row.querySelector('.remove-product');
+            container.appendChild(newRow);
 
-        productSelect.addEventListener('change', function() {
-            const option = this.options[this.selectedIndex];
-            priceInput.value = option.dataset.price || '';
-            calculateSubtotal();
+            // Re-initialize Select2
+            select.select2({
+                language: "es",
+                width: '100%'
+            });
+
+            attachRowEvents(newRow);
         });
 
-        quantityInput.addEventListener('input', calculateSubtotal);
-        priceInput.addEventListener('input', calculateSubtotal);
+        function attachRowEvents(row) {
+            const productSelect = row.querySelector('.product-select');
+            const quantityInput = row.querySelector('.quantity-input');
+            const priceInput = row.querySelector('.price-input');
+            const subtotalDisplay = row.querySelector('.subtotal-display');
+            const removeBtn = row.querySelector('.remove-product');
 
-        removeBtn.addEventListener('click', function() {
-            if (container.querySelectorAll('.product-row').length > 1) {
-                row.remove();
+            productSelect.addEventListener('change', function () {
+                const option = this.options[this.selectedIndex];
+                priceInput.value = option.dataset.price || '';
+                calculateSubtotal();
+            });
+
+            quantityInput.addEventListener('input', calculateSubtotal);
+            priceInput.addEventListener('input', calculateSubtotal);
+
+            removeBtn.addEventListener('click', function () {
+                if (container.querySelectorAll('.product-row').length > 1) {
+                    row.remove();
+                    calculateTotal();
+                }
+            });
+
+            function calculateSubtotal() {
+                const qty = parseFloat(quantityInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const subtotal = qty * price;
+                subtotalDisplay.value = '$' + subtotal.toFixed(2);
                 calculateTotal();
             }
-        });
-
-        function calculateSubtotal() {
-            const qty = parseFloat(quantityInput.value) || 0;
-            const price = parseFloat(priceInput.value) || 0;
-            const subtotal = qty * price;
-            subtotalDisplay.value = '$' + subtotal.toFixed(2);
-            calculateTotal();
-        }
-    }
-
-    function calculateTotal() {
-        let total = 0;
-        container.querySelectorAll('.product-row').forEach(row => {
-            const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
-            const price = parseFloat(row.querySelector('.price-input').value) || 0;
-            total += qty * price;
-        });
-        document.getElementById('totalAmount').textContent = total.toFixed(2);
-    }
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const products = [];
-        container.querySelectorAll('.product-row').forEach(row => {
-            const productId = row.querySelector('.product-select').value;
-            const quantity = row.querySelector('.quantity-input').value;
-            const price = row.querySelector('.price-input').value;
-            
-            if (productId && quantity && price) {
-                products.push({
-                    product_id: productId,
-                    quantity: quantity,
-                    price: price
-                });
-            }
-        });
-
-        if (products.length === 0) {
-            alert('Debe agregar al menos un producto');
-            return;
         }
 
-        products.forEach((product, index) => {
-            Object.keys(product).forEach(key => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = `products[${index}][${key}]`;
-                input.value = product[key];
-                form.appendChild(input);
+        function calculateTotal() {
+            let total = 0;
+            container.querySelectorAll('.product-row').forEach(row => {
+                const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                total += qty * price;
             });
+            document.getElementById('totalAmount').textContent = total.toFixed(2);
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const products = [];
+            container.querySelectorAll('.product-row').forEach(row => {
+                const productId = row.querySelector('.product-select').value;
+                const quantity = row.querySelector('.quantity-input').value;
+                const price = row.querySelector('.price-input').value;
+
+                if (productId && quantity && price) {
+                    products.push({
+                        product_id: productId,
+                        quantity: quantity,
+                        price: price
+                    });
+                }
+            });
+
+            if (products.length === 0) {
+                alert('Debe agregar al menos un producto');
+                return;
+            }
+
+            products.forEach((product, index) => {
+                Object.keys(product).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `products[${index}][${key}]`;
+                    input.value = product[key];
+                    form.appendChild(input);
+                });
+            });
+
+            form.submit();
         });
 
-        form.submit();
+        attachRowEvents(container.querySelector('.product-row'));
     });
-
-    attachRowEvents(container.querySelector('.product-row'));
-});
 </script>
 
 <?php echo view('templates/footer'); ?>

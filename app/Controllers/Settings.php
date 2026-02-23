@@ -18,8 +18,9 @@ class Settings extends BaseController
 
     public function index()
     {
+        helper('permission');
         // Solo admin puede acceder
-        if ($this->session->get('role') !== 'admin') {
+        if (!is_admin()) {
             return redirect()->to('/dashboard')->with('error', 'Acceso denegado');
         }
 
@@ -33,13 +34,14 @@ class Settings extends BaseController
 
     public function update()
     {
+        helper('permission');
         // Solo admin puede actualizar
-        if ($this->session->get('role') !== 'admin') {
+        if (!is_admin()) {
             return redirect()->to('/dashboard')->with('error', 'Acceso denegado');
         }
 
         $validation = \Config\Services::validation();
-        
+
         $rules = [
             'company_name' => 'required|min_length[3]|max_length[100]',
             'company_ruc' => 'required|max_length[20]',

@@ -1,12 +1,15 @@
-<?php 
-$extraCSS = ['assets/css/dashboard.css'];
-echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]); 
+<?php
+$extraCSS = [
+    'assets/css/dashboard.css',
+    'https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css'
+];
+echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 helper('permission');
 ?>
 
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
-    
+
     <div class="main-content">
         <div class="topbar">
             <div class="topbar-title">
@@ -18,9 +21,9 @@ helper('permission');
                     📊 Reporte
                 </a>
                 <?php if (can_insert('expenses')): ?>
-                <a href="<?= base_url('expenses/create') ?>" class="btn btn-primary">
-                    ➕ Nuevo Gasto
-                </a>
+                    <a href="<?= base_url('expenses/create') ?>" class="btn btn-primary">
+                        ➕ Nuevo Gasto
+                    </a>
                 <?php endif; ?>
             </div>
         </div>
@@ -41,7 +44,7 @@ helper('permission');
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table">
+                        <table id="expensesTable" class="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
@@ -53,13 +56,7 @@ helper('permission');
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($expenses)): ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted">
-                                            No hay gastos registrados
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
+                                <?php if (!empty($expenses)): ?>
                                     <?php foreach ($expenses as $expense): ?>
                                         <tr>
                                             <td><?= date('d/m/Y', strtotime($expense['date'])) ?></td>
@@ -67,19 +64,24 @@ helper('permission');
                                                 <span class="badge badge-primary"><?= esc($expense['category_name']) ?></span>
                                             </td>
                                             <td><?= esc($expense['description']) ?></td>
-                                            <td class="text-danger"><strong>$<?= number_format($expense['amount'], 2) ?></strong></td>
+                                            <td class="text-danger">
+                                                <strong>$<?= number_format($expense['amount'], 2) ?></strong>
+                                            </td>
                                             <td><?= esc($expense['username']) ?></td>
                                             <td>
                                                 <?php if (can_update('expenses')): ?>
-                                                <a href="<?= base_url('expenses/edit/' . $expense['id']) ?>" class="btn btn-sm btn-primary">
-                                                    ✏️ Editar
-                                                </a>
+                                                    <a href="<?= base_url('expenses/edit/' . $expense['id']) ?>"
+                                                        class="btn btn-sm btn-primary">
+                                                        ✏️ Editar
+                                                    </a>
                                                 <?php endif; ?>
 
                                                 <?php if (can_delete('expenses')): ?>
-                                                <a href="<?= base_url('expenses/delete/' . $expense['id']) ?>" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este gasto?')">
-                                                    🗑️
-                                                </a>
+                                                    <a href="<?= base_url('expenses/delete/' . $expense['id']) ?>"
+                                                        class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('¿Eliminar este gasto?')">
+                                                        🗑️
+                                                    </a>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -94,4 +96,19 @@ helper('permission');
     </div>
 </div>
 
-<?php echo view('templates/footer'); ?>
+<?php
+$extraJS = [
+    'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js',
+    'https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js'
+];
+$scripts = "
+<script>
+    $(document).ready(function () {
+        $('#expensesTable').DataTable({
+            'order': [[0, 'desc']] // Sort by Date descending
+        });
+    });
+</script>
+";
+echo view('templates/footer', ['extraJS' => $extraJS, 'scripts' => $scripts]);
+?>

@@ -80,7 +80,7 @@ class Sales extends BaseController
             if (empty($products)) {
                 return redirect()->back()->with('error', 'Debe agregar al menos un producto');
             }
-            
+
             if (empty($warehouseId)) {
                 return redirect()->back()->with('error', 'Debe seleccionar un depósito');
             }
@@ -148,7 +148,8 @@ class Sales extends BaseController
                     'product_id' => $product['product_id'],
                     'quantity' => $product['quantity'],
                     'price' => $product['price'],
-                    'subtotal' => $product['quantity'] * $product['price']
+                    'subtotal' => $product['quantity'] * $product['price'],
+                    'description' => $product['description'] ?? null
                 ];
 
                 $this->saleDetailModel->insert($detailData);
@@ -163,7 +164,8 @@ class Sales extends BaseController
                 return redirect()->back()->with('error', 'Error al crear la venta');
             }
 
-            return redirect()->to('/sales')->with('success', 'Venta creada correctamente');
+            // Redirect to view instead of index
+            return redirect()->to('/sales/view/' . $saleId)->with('success', 'Venta creada correctamente');
 
         } catch (\Exception $e) {
             $this->db->transRollback();
@@ -177,7 +179,7 @@ class Sales extends BaseController
         require_permission('sales', 'view');
 
         $sale = $this->saleModel->getSaleWithDetails($id);
-        
+
         if (!$sale) {
             return redirect()->to('/sales')->with('error', 'Venta no encontrada');
         }
@@ -191,20 +193,43 @@ class Sales extends BaseController
         return view('sales/view', $data);
     }
 
-    public function delete($id)
+    public function ticket($id)
     {
-        // Check delete permission
+        // Check view permission
+        require_permission('sales', 'view');
+
+        $sale = $this->saleModel->getSaleWithDetails($id);
+
+        if (!$sale) {
+            return "Venta no encontrada";
+        }
+
+        $data = [
+            'sale' => $sale,
+            'settings' => model('SettingsModel')->getAllSettings() // Corrected method name
+        ];
+
+        return view('sales/ticket', $data);
+    }
+
+    public function annul($id)
+    {
+        // Check delete permission (we use delete permission for annulment)
         require_permission('sales', 'delete');
 
         $this->db->transStart();
 
         try {
             $sale = $this->saleModel->getSaleWithDetails($id);
-            
+
             if (!$sale) {
                 return redirect()->to('/sales')->with('error', 'Venta no encontrada');
             }
-            
+
+            if ($sale['status'] === 'cancelled') {
+                return redirect()->to('/sales')->with('error', 'La venta ya está anulada');
+            }
+
             $warehouseId = $sale['warehouse_id'];
 
             // Restaurar stock
@@ -212,16 +237,16 @@ class Sales extends BaseController
                 $this->productModel->updateStock($detail['product_id'], $detail['quantity'], 'add', $warehouseId);
             }
 
-            // Eliminar venta (los detalles se eliminan por CASCADE)
-            $this->saleModel->delete($id);
+            // Anular venta (Cambiar estado a cancelled)
+            $this->saleModel->update($id, ['status' => 'cancelled']);
 
             $this->db->transComplete();
 
-            return redirect()->to('/sales')->with('success', 'Venta eliminada correctamente');
+            return redirect()->to('/sales')->with('success', 'Venta anulada correctamente');
 
         } catch (\Exception $e) {
             $this->db->transRollback();
-            return redirect()->to('/sales')->with('error', 'Error al eliminar: ' . $e->getMessage());
+            return redirect()->to('/sales')->with('error', 'Error al anular: ' . $e->getMessage());
         }
     }
 
@@ -248,33 +273,35 @@ class Sales extends BaseController
         }
 
         $term = $this->request->getGet('term');
-        
+
         $productModel = new \App\Models\ProductModel();
-        
+
         // This is generic search, stock check happens at selection or validation
         // Could be enhanced to show stock per warehouse if warehouse_id is passed
         $warehouseId = $this->request->getGet('warehouse_id');
 
         $query = $productModel->select('products.*, categories.name as category_name')
-                              ->join('categories', 'categories.id = products.category_id');
+            ->join('categories', 'categories.id = products.category_id');
 
         if (!empty($term)) {
             $query->groupStart()
-                  ->like('products.name', $term)
-                  ->orLike('products.code', $term)
-                  ->groupEnd();
+                ->like('products.name', $term)
+                ->orLike('products.code', $term)
+                ->orLike('products.imei1', $term)
+                ->orLike('products.imei2', $term)
+                ->groupEnd();
         }
 
         // Limit to 50 results for performance
         $products = $query->limit(50)->find();
-        
+
         // If warehouse is selected, attach specific stock info
         if ($warehouseId) {
-             $productStockModel = new ProductStockModel();
-             foreach ($products as &$product) {
-                 $product['warehouse_stock'] = $productStockModel->getStock($product['id'], $warehouseId);
-                 $product['stock'] = $product['warehouse_stock']; // Override for UI
-             }
+            $productStockModel = new ProductStockModel();
+            foreach ($products as &$product) {
+                $product['warehouse_stock'] = $productStockModel->getStock($product['id'], $warehouseId);
+                $product['stock'] = $product['warehouse_stock']; // Override for UI
+            }
         }
 
         return $this->response->setJSON($products);

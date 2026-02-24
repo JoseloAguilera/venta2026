@@ -67,8 +67,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             <td><?= esc($adjustment['username']) ?></td>
                                             <td>
                                                 <a href="<?= base_url('inventory-adjustments/view/' . $adjustment['id']) ?>"
-                                                    class="btn btn-sm btn-primary">
-                                                    👁️ Ver
+                                                    class="btn btn-sm btn-primary" title="Ver">
+                                                    👁️
                                                 </a>
                                             </td>
                                         </tr>

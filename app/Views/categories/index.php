@@ -66,16 +66,16 @@ helper('permission');
                                             <td>
                                                 <?php if (can_update('categories')): ?>
                                                     <a href="<?= base_url('categories/edit/' . $category['id']) ?>"
-                                                        class="btn btn-sm btn-secondary">
-                                                        ✏️ Editar
+                                                        class="btn btn-sm btn-secondary" title="Editar">
+                                                        ✏️
                                                     </a>
                                                 <?php endif; ?>
 
                                                 <?php if (can_delete('categories')): ?>
                                                     <a href="<?= base_url('categories/delete/' . $category['id']) ?>"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Eliminar esta categoría?')">
-                                                        🗑️ Eliminar
+                                                        onclick="return confirm('¿Eliminar esta categoría?')" title="Eliminar">
+                                                        🗑️
                                                     </a>
                                                 <?php endif; ?>
                                             </td>

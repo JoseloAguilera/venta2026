@@ -9,7 +9,7 @@
 
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="<?= base_url('assets/css/main.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/main.css?v=' . time()) ?>">
     <?php if (isset($extraCSS)): ?>
         <?php foreach ($extraCSS as $css): ?>
             <?php if (strpos($css, 'http') === 0): ?>

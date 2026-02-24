@@ -140,6 +140,13 @@ $routes->group('expenses', ['filter' => 'auth'], function ($routes) {
     $routes->get('report', 'Expenses::report');
 });
 
+// Reports module (requires authentication)
+$routes->group('reports', ['filter' => 'auth'], function ($routes) {
+    $routes->get('sales', 'Reports::sales');
+    $routes->get('profit-by-sale', 'Reports::profitBySale');
+    $routes->get('profit-by-item', 'Reports::profitByItem');
+});
+
 // Profile module (requires authentication)
 $routes->group('profile', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Profile::index');

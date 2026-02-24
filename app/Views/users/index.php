@@ -77,8 +77,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             <td>
                                                 <?php if (can_update('users')): ?>
                                                     <a href="<?= base_url('users/edit/' . $user['id']) ?>"
-                                                        class="btn btn-sm btn-secondary">
-                                                        ✏️ Editar
+                                                        class="btn btn-sm btn-secondary" title="Editar">
+                                                        ✏️
                                                     </a>
                                                 <?php endif; ?>
 
@@ -86,8 +86,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                                     <?php if (session()->get('user_id') != $user['id']): ?>
                                                         <a href="<?= base_url('users/delete/' . $user['id']) ?>"
                                                             class="btn btn-sm btn-danger"
-                                                            onclick="return confirm('¿Está seguro de eliminar este usuario?')">
-                                                            🗑️ Eliminar
+                                                            onclick="return confirm('¿Está seguro de eliminar este usuario?')" title="Eliminar">
+                                                            🗑️
                                                         </a>
                                                     <?php endif; ?>
                                                 <?php endif; ?>

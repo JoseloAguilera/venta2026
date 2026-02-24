@@ -84,14 +84,15 @@ helper('permission');
                                             </td>
                                             <td>
                                                 <a href="<?= base_url('purchases/view/' . $purchase['id']) ?>"
-                                                    class="btn btn-sm btn-primary">
-                                                    👁️ Ver
+                                                    class="btn btn-sm btn-primary" title="Ver">
+                                                    👁️
                                                 </a>
                                                 <?php if (can_delete('purchases') && $purchase['status'] !== 'cancelled'): ?>
                                                     <a href="<?= base_url('purchases/annul/' . $purchase['id']) ?>"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Anular esta compra? Esta acción revertirá el stock.')">
-                                                        🚫 Anular
+                                                        onclick="return confirm('¿Anular esta compra? Esta acción revertirá el stock.')"
+                                                        title="Anular">
+                                                        🚫
                                                     </a>
                                                 <?php endif; ?>
                                             </td>

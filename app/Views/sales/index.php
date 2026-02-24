@@ -84,8 +84,8 @@ helper('permission');
                                             </td>
                                             <td>
                                                 <a href="<?= base_url('sales/view/' . $sale['id']) ?>"
-                                                    class="btn btn-sm btn-primary">
-                                                    👁️ Ver
+                                                    class="btn btn-sm btn-primary" title="Ver">
+                                                    👁️
                                                 </a>
                                                 <a href="javascript:void(0)"
                                                     onclick="openTicket('<?= base_url('sales/ticket/' . $sale['id']) ?>')"
@@ -95,8 +95,9 @@ helper('permission');
                                                 <?php if (can_delete('sales') && $sale['status'] !== 'cancelled'): ?>
                                                     <a href="<?= base_url('sales/annul/' . $sale['id']) ?>"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Anular esta venta? Esta acción revertirá el stock.')">
-                                                        🚫 Anular
+                                                        onclick="return confirm('¿Anular esta venta? Esta acción revertirá el stock.')"
+                                                        title="Anular">
+                                                        🚫
                                                     </a>
                                                 <?php endif; ?>
                                             </td>

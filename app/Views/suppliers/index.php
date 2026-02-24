@@ -57,21 +57,21 @@ helper('permission');
                                             <td><?= esc($supplier['email']) ?></td>
                                             <td>
                                                 <a href="<?= base_url('suppliers/account/' . $supplier['id']) ?>"
-                                                    class="btn btn-sm btn-primary">
-                                                    💰 Cuenta
+                                                    class="btn btn-sm btn-primary" title="Cuenta">
+                                                    💰
                                                 </a>
                                                 <?php if (can_update('suppliers')): ?>
                                                     <a href="<?= base_url('suppliers/edit/' . $supplier['id']) ?>"
-                                                        class="btn btn-sm btn-secondary">
-                                                        ✏️ Editar
+                                                        class="btn btn-sm btn-secondary" title="Editar">
+                                                        ✏️
                                                     </a>
                                                 <?php endif; ?>
 
                                                 <?php if (can_delete('suppliers')): ?>
                                                     <a href="<?= base_url('suppliers/delete/' . $supplier['id']) ?>"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Eliminar este proveedor?')">
-                                                        🗑️ Eliminar
+                                                        onclick="return confirm('¿Eliminar este proveedor?')" title="Eliminar">
+                                                        🗑️
                                                     </a>
                                                 <?php endif; ?>
                                             </td>

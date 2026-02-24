@@ -83,16 +83,16 @@ helper('permission');
                                             <td>
                                                 <?php if (can_update('products')): ?>
                                                     <a href="<?= base_url('products/edit/' . $product['id']) ?>"
-                                                        class="btn btn-sm btn-secondary">
-                                                        ✏️ Editar
+                                                        class="btn btn-sm btn-secondary" title="Editar">
+                                                        ✏️
                                                     </a>
                                                 <?php endif; ?>
 
                                                 <?php if (can_delete('products')): ?>
                                                     <a href="<?= base_url('products/delete/' . $product['id']) ?>"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Eliminar este producto?')">
-                                                        🗑️ Eliminar
+                                                        onclick="return confirm('¿Eliminar este producto?')" title="Eliminar">
+                                                        🗑️
                                                     </a>
                                                 <?php endif; ?>
                                             </td>

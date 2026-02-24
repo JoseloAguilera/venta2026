@@ -51,12 +51,12 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             </td>
                                             <td>
                                                 <a href="<?= base_url('payments/create/' . $purchase['id']) ?>"
-                                                    class="btn btn-sm btn-success">
-                                                    💳 Registrar Pago
+                                                    class="btn btn-sm btn-success" title="Registrar Pago">
+                                                    💳
                                                 </a>
                                                 <a href="<?= base_url('purchases/view/' . $purchase['id']) ?>"
-                                                    class="btn btn-sm btn-primary">
-                                                    👁️ Ver
+                                                    class="btn btn-sm btn-primary" title="Ver">
+                                                    👁️
                                                 </a>
                                             </td>
                                         </tr>

@@ -139,6 +139,25 @@
             <?php endif; ?>
         </div>
 
+        <div class="nav-section">
+            <div class="nav-section-title">Reportes</div>
+            <a href="<?= base_url('reports/sales') ?>"
+                class="nav-link <?= uri_string() == 'reports/sales' ? 'active' : '' ?>">
+                <span class="nav-icon">📄</span>
+                <span>Rep. Ventas</span>
+            </a>
+            <a href="<?= base_url('reports/profit-by-sale') ?>"
+                class="nav-link <?= uri_string() == 'reports/profit-by-sale' ? 'active' : '' ?>">
+                <span class="nav-icon">📈</span>
+                <span>Ganancia por Venta</span>
+            </a>
+            <a href="<?= base_url('reports/profit-by-item') ?>"
+                class="nav-link <?= uri_string() == 'reports/profit-by-item' ? 'active' : '' ?>">
+                <span class="nav-icon">📊</span>
+                <span>Ganancia por Artículo</span>
+            </a>
+        </div>
+
         <?php
         // Show Sistema section if user can view settings OR roles
         if (can_view('settings') || can_view('roles')):

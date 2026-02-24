@@ -71,15 +71,15 @@ helper('permission');
                                             <td>
                                                 <?php if (can_update('expenses')): ?>
                                                     <a href="<?= base_url('expenses/edit/' . $expense['id']) ?>"
-                                                        class="btn btn-sm btn-primary">
-                                                        ✏️ Editar
+                                                        class="btn btn-sm btn-primary" title="Editar">
+                                                        ✏️
                                                     </a>
                                                 <?php endif; ?>
 
                                                 <?php if (can_delete('expenses')): ?>
                                                     <a href="<?= base_url('expenses/delete/' . $expense['id']) ?>"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Eliminar este gasto?')">
+                                                        onclick="return confirm('¿Eliminar este gasto?')" title="Eliminar">
                                                         🗑️
                                                     </a>
                                                 <?php endif; ?>

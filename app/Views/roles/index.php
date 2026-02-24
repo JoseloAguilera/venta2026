@@ -65,16 +65,16 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             <td>
                                                 <?php if (can_update('roles')): ?>
                                                     <a href="<?= base_url('roles/edit/' . $role['id']) ?>"
-                                                        class="btn btn-sm btn-secondary">
-                                                        ✏️ Editar
+                                                        class="btn btn-sm btn-secondary" title="Editar">
+                                                        ✏️
                                                     </a>
                                                 <?php endif; ?>
 
                                                 <?php if (can_delete('roles') && $role['is_system'] == 0): ?>
                                                     <a href="<?= base_url('roles/delete/' . $role['id']) ?>"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Está seguro de eliminar este rol?')">
-                                                        🗑️ Eliminar
+                                                        onclick="return confirm('¿Está seguro de eliminar este rol?')" title="Eliminar">
+                                                        🗑️
                                                     </a>
                                                 <?php endif; ?>
                                             </td>

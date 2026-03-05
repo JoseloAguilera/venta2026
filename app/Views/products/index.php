@@ -49,8 +49,6 @@ helper('permission');
                                     <th>Código</th>
                                     <th>Nombre</th>
                                     <th>Categoría</th>
-                                    <th>IMEI 1</th>
-                                    <th>IMEI 2</th>
                                     <th>Costo</th>
                                     <th>Venta</th>
                                     <th>Mínimo</th>
@@ -67,8 +65,6 @@ helper('permission');
                                             <td><code><?= esc($product['code']) ?></code></td>
                                             <td><strong><?= esc($product['name']) ?></strong></td>
                                             <td><?= esc($product['category_name']) ?></td>
-                                            <td class="small"><?= esc($product['imei1'] ?? '-') ?></td>
-                                            <td class="small"><?= esc($product['imei2'] ?? '-') ?></td>
                                             <td class="text-muted">$<?= number_format($product['cost_price'] ?? 0, 2) ?></td>
                                             <td class="text-primary font-weight-bold">
                                                 $<?= number_format($product['price'], 2) ?></td>

@@ -80,7 +80,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->post('store', 'Sales::store');
     $routes->get('view/(:num)', 'Sales::view/$1');
     $routes->get('ticket/(:num)', 'Sales::ticket/$1');
-    $routes->get('annul/(:num)', 'Sales::annul/$1', ['filter' => 'role:admin']);
+    $routes->get('annul/(:num)', 'Sales::annul/$1');
     $routes->post('validate-auth', 'Sales::validateAuth');
     $routes->get('search-products', 'Sales::searchProducts');
 });
@@ -91,7 +91,7 @@ $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     $routes->get('create', 'Purchases::create');
     $routes->post('store', 'Purchases::store');
     $routes->get('view/(:num)', 'Purchases::view/$1');
-    $routes->get('annul/(:num)', 'Purchases::annul/$1', ['filter' => 'role:admin']);
+    $routes->get('annul/(:num)', 'Purchases::annul/$1');
 });
 
 // Collections module (requires authentication)

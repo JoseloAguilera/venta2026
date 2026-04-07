@@ -71,6 +71,7 @@ $routes->group('suppliers', ['filter' => 'auth'], function ($routes) {
     $routes->post('update/(:num)', 'Suppliers::update/$1');
     $routes->get('delete/(:num)', 'Suppliers::delete/$1');
     $routes->get('account/(:num)', 'Suppliers::account/$1');
+    $routes->post('ajax-store', 'Suppliers::ajaxStore');
 });
 
 // Sales module (requires authentication)

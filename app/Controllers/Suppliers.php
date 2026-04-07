@@ -178,4 +178,64 @@ class Suppliers extends BaseController
 
         return view('suppliers/account', $data);
     }
+    public function ajaxStore()
+    {
+        // Check insert permission
+        if (!has_permission('suppliers', 'insert')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => ['auth' => 'No tiene permiso para crear proveedores']
+            ]);
+        }
+
+        $validation = \Config\Services::validation();
+
+        $validation->setRules([
+            'name' => 'required|min_length[3]|max_length[200]',
+            'document' => 'permit_empty|max_length[50]',
+            'phone' => 'permit_empty|max_length[50]',
+            'email' => 'permit_empty|valid_email',
+            'address' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 200 caracteres'
+            ],
+            'email' => [
+                'valid_email' => 'El correo electrónico no es válido'
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => $validation->getErrors()
+            ]);
+        }
+
+        $data = [
+            'name' => $this->request->getPost('name'),
+            'document' => $this->request->getPost('document'),
+            'phone' => $this->request->getPost('phone'),
+            'email' => $this->request->getPost('email'),
+            'address' => $this->request->getPost('address')
+        ];
+
+        // Ensure empty fields are handled correctly if your db requires
+        if (empty($data['email'])) unset($data['email']);
+
+        if ($this->supplierModel->insert($data)) {
+            $data['id'] = $this->supplierModel->getInsertID();
+            return $this->response->setJSON([
+                'success' => true,
+                'supplier' => $data
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => $this->supplierModel->errors()
+            ]);
+        }
+    }
 }

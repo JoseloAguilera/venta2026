@@ -4,6 +4,51 @@ $extraCSS = ['assets/css/dashboard.css'];
 echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 ?>
 
+<style>
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .modal-close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .modal-close:hover,
+    .modal-close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+
 <div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
 
@@ -58,12 +103,15 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="supplier_id" class="form-label">Proveedor *</label>
-                                    <select id="supplier_id" name="supplier_id" class="form-control" required>
-                                        <option value="">Seleccione un proveedor</option>
-                                        <?php foreach ($suppliers as $supplier): ?>
-                                            <option value="<?= $supplier['id'] ?>"><?= esc($supplier['name']) ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                    <div class="d-flex gap-2">
+                                        <select id="supplier_id" name="supplier_id" class="form-control" required>
+                                            <option value="">Seleccione un proveedor</option>
+                                            <?php foreach ($suppliers as $supplier): ?>
+                                                <option value="<?= $supplier['id'] ?>"><?= esc($supplier['name']) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button type="button" class="btn btn-secondary" id="openSupplierModal" title="Nuevo Proveedor">➕</button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -129,11 +177,101 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
     </div>
 </div>
 
+<!-- Supplier Modal -->
+<div id="supplierModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Nuevo Proveedor</h3>
+            <span class="modal-close" id="closeSupplierModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="supplierForm">
+                <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">RUC / NIT / Documento</label>
+                    <input type="text" name="document" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="phone" class="form-control">
+                </div>
+                <div id="supplierError" class="alert alert-danger" style="display:none; margin-top: 10px;"></div>
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="button" class="btn btn-secondary" id="cancelSupplier">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Proveedor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('products-container');
         const addBtn = document.getElementById('addProduct');
         const form = document.getElementById('purchaseForm');
+
+        // Modal Elements
+        const supplierModal = document.getElementById('supplierModal');
+        const openSupplierBtn = document.getElementById('openSupplierModal');
+        const closeSupplierBtn = document.getElementById('closeSupplierModal');
+        const cancelSupplierBtn = document.getElementById('cancelSupplier');
+        const supplierForm = document.getElementById('supplierForm');
+        const supplierSelect = document.getElementById('supplier_id');
+
+        openSupplierBtn.onclick = () => {
+            supplierModal.style.display = "block";
+            supplierForm.reset();
+            document.getElementById('supplierError').style.display = 'none';
+        };
+
+        closeSupplierBtn.onclick = () => supplierModal.style.display = "none";
+        cancelSupplierBtn.onclick = () => supplierModal.style.display = "none";
+
+        window.onclick = (event) => {
+            if (event.target == supplierModal) supplierModal.style.display = "none";
+        };
+
+        supplierForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('<?= base_url('suppliers/ajax-store') ?>', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const option = new Option(data.supplier.name, data.supplier.id);
+                        supplierSelect.add(option, undefined);
+                        supplierSelect.value = data.supplier.id;
+                        
+                        // If using select2, update it
+                        if ($(supplierSelect).hasClass('select2-hidden-accessible')) {
+                            $(supplierSelect).trigger('change.select2');
+                        }
+
+                        supplierModal.style.display = "none";
+                        alert('Proveedor creado exitosamente');
+                    } else {
+                        const errorDiv = document.getElementById('supplierError');
+                        errorDiv.innerHTML = Object.values(data.errors).join('<br>');
+                        errorDiv.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión');
+                });
+        });
 
         addBtn.addEventListener('click', function () {
             const firstRow = container.querySelector('.product-row');

@@ -306,4 +306,40 @@ class Sales extends BaseController
 
         return $this->response->setJSON($products);
     }
+
+    public function updateObservations($id)
+    {
+        // Check view permission as they are viewing the sale to edit it. 
+        // We also check the password for actual authorization.
+        require_permission('sales', 'view');
+
+        $password = $this->request->getPost('auth_password');
+        $settingsModel = new \App\Models\SettingsModel();
+        $minPricePassword = $settingsModel->getValue('min_price_password', '0000');
+
+        if ($password !== $minPricePassword) {
+            return redirect()->back()->with('error', 'Contraseña incorrecta');
+        }
+
+        $observations = $this->request->getPost('observations');
+
+        if (!empty($observations) && is_array($observations)) {
+            $this->db->transStart();
+            try {
+                foreach ($observations as $detailId => $description) {
+                    $this->saleDetailModel->update($detailId, ['description' => $description]);
+                }
+                $this->db->transComplete();
+                if ($this->db->transStatus() === false) {
+                    return redirect()->back()->with('error', 'Error al actualizar las observaciones');
+                }
+                return redirect()->back()->with('success', 'Observaciones actualizadas correctamente');
+            } catch (\Exception $e) {
+                $this->db->transRollback();
+                return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->back()->with('error', 'No se recibieron observaciones para actualizar');
+    }
 }

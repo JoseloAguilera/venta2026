@@ -83,6 +83,7 @@ $routes->group('sales', ['filter' => 'auth'], function ($routes) {
     $routes->get('annul/(:num)', 'Sales::annul/$1');
     $routes->post('validate-auth', 'Sales::validateAuth');
     $routes->get('search-products', 'Sales::searchProducts');
+    $routes->post('update-observations/(:num)', 'Sales::updateObservations/$1');
 });
 
 // Purchases module (requires authentication)

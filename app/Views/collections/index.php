@@ -45,9 +45,9 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             <td><strong><?= esc($sale['sale_number']) ?></strong></td>
                                             <td><?= esc($sale['customer_name']) ?></td>
                                             <td><?= date('d/m/Y', strtotime($sale['date'])) ?></td>
-                                            <td>$<?= number_format($sale['total'], 2) ?></td>
+                                            <td><?= formato_moneda($sale['total']) ?></td>
                                             <td class="text-danger">
-                                                <strong>$<?= number_format($sale['pending_balance'], 2) ?></strong>
+                                                <strong><?= formato_moneda($sale['pending_balance']) ?></strong>
                                             </td>
                                             <td>
                                                 <a href="<?= base_url('collections/create/' . $sale['id']) ?>"

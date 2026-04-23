@@ -37,9 +37,9 @@ echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $
                         <h3 class="stat-title">Ventas del Día</h3>
                         <div class="stat-icon primary">💰</div>
                     </div>
-                    <p class="stat-value">$<?= number_format($stats['sales_today'], 2) ?></p>
+                    <p class="stat-value"><?= formato_moneda($stats['sales_today']) ?></p>
                     <p class="stat-change <?= $stats['sales_change'] >= 0 ? 'positive' : 'negative' ?>">
-                        <?= $stats['sales_change'] >= 0 ? '+' : '' ?><?= number_format($stats['sales_change'], 1) ?>% vs
+                        <?= $stats['sales_change'] >= 0 ? '+' : '' ?><?= formato_moneda($stats['sales_change']) ?>% vs
                         ayer
                     </p>
                 </div>
@@ -58,7 +58,7 @@ echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $
                         <h3 class="stat-title">Cuentas por Cobrar</h3>
                         <div class="stat-icon warning">💵</div>
                     </div>
-                    <p class="stat-value">$<?= number_format($stats['receivables'], 2) ?></p>
+                    <p class="stat-value"><?= formato_moneda($stats['receivables']) ?></p>
                     <p class="stat-change">Pendientes</p>
                 </div>
             </div>

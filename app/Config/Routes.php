@@ -142,6 +142,18 @@ $routes->group('expenses', ['filter' => 'auth'], function ($routes) {
     $routes->get('report', 'Expenses::report');
 });
 
+// Accounts (Cajas / Bancos) module (requires authentication)
+$routes->group('accounts', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'Accounts::index');
+    $routes->get('create', 'Accounts::create');
+    $routes->post('store', 'Accounts::store');
+    $routes->get('edit/(:num)', 'Accounts::edit/$1');
+    $routes->post('update/(:num)', 'Accounts::update/$1');
+    $routes->get('delete/(:num)', 'Accounts::delete/$1');
+    $routes->get('statement/(:num)', 'Accounts::statement/$1');
+    $routes->post('storeTransaction/(:num)', 'Accounts::storeTransaction/$1');
+});
+
 // Reports module (requires authentication)
 $routes->group('reports', ['filter' => 'auth'], function ($routes) {
     $routes->get('sales', 'Reports::sales');

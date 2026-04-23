@@ -45,9 +45,9 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             <td><strong><?= esc($purchase['purchase_number']) ?></strong></td>
                                             <td><?= esc($purchase['supplier_name']) ?></td>
                                             <td><?= date('d/m/Y', strtotime($purchase['date'])) ?></td>
-                                            <td>$<?= number_format($purchase['total'], 2) ?></td>
+                                            <td><?= formato_moneda($purchase['total']) ?></td>
                                             <td class="text-danger">
-                                                <strong>$<?= number_format($purchase['pending_balance'], 2) ?></strong>
+                                                <strong><?= formato_moneda($purchase['pending_balance']) ?></strong>
                                             </td>
                                             <td>
                                                 <a href="<?= base_url('payments/create/' . $purchase['id']) ?>"

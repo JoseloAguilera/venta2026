@@ -18,7 +18,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
             <div class="card">
                 <div class="card-header">
                     <h4>Venta: <?= $sale['sale_number'] ?> - Cliente: <?= esc($sale['customer_name']) ?></h4>
-                    <p class="text-muted">Total: $<?= number_format($sale['total'], 2) ?> | Saldo Pendiente: <span class="text-danger">$<?= number_format($pending_balance, 2) ?></span></p>
+                    <p class="text-muted">Total: <?= formato_moneda($sale['total']) ?> | Saldo Pendiente: <span class="text-danger"><?= formato_moneda($pending_balance) ?></span></p>
                 </div>
                 <div class="card-body">
                     <?php if (session()->getFlashdata('errors')): ?>
@@ -53,7 +53,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 value="<?= $pending_balance ?>"
                                 required
                             >
-                            <small class="text-muted">Máximo: $<?= number_format($pending_balance, 2) ?></small>
+                            <small class="text-muted">Máximo: <?= formato_moneda($pending_balance) ?></small>
                         </div>
 
                         <div class="form-group">
@@ -106,7 +106,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                     <?php foreach ($payments as $payment): ?>
                                         <tr>
                                             <td><?= date('d/m/Y', strtotime($payment['payment_date'])) ?></td>
-                                            <td>$<?= number_format($payment['amount'], 2) ?></td>
+                                            <td><?= formato_moneda($payment['amount']) ?></td>
                                             <td><?= ucfirst($payment['payment_method']) ?></td>
                                             <td><?= esc($payment['notes']) ?></td>
                                         </tr>

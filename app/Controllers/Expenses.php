@@ -4,17 +4,23 @@ namespace App\Controllers;
 
 use App\Models\ExpenseModel;
 use App\Models\ExpenseCategoryModel;
+use App\Models\AccountModel;
+use App\Models\TransactionModel;
 
 class Expenses extends BaseController
 {
     protected $expenseModel;
     protected $categoryModel;
+    protected $accountModel;
+    protected $transactionModel;
     protected $session;
 
     public function __construct()
     {
         $this->expenseModel = new ExpenseModel();
         $this->categoryModel = new ExpenseCategoryModel();
+        $this->accountModel = new AccountModel();
+        $this->transactionModel = new TransactionModel();
         $this->session = session();
         helper(['form', 'url', 'permission']);
     }
@@ -40,7 +46,8 @@ class Expenses extends BaseController
 
         $data = [
             'title' => 'Nuevo Gasto',
-            'categories' => $this->categoryModel->findAll()
+            'categories' => $this->categoryModel->findAll(),
+            'accounts' => $this->accountModel->where('status', 1)->findAll()
         ];
 
         return view('expenses/create', $data);
@@ -74,6 +81,23 @@ class Expenses extends BaseController
         ];
 
         if ($this->expenseModel->insert($data)) {
+            $expenseId = $this->expenseModel->getInsertID();
+            $accountId = $this->request->getPost('account_id');
+
+            if (!empty($accountId)) {
+                $this->transactionModel->insert([
+                    'account_id' => $accountId,
+                    'type' => 'expense',
+                    'amount' => $data['amount'],
+                    'reference_type' => 'expense',
+                    'reference_id' => $expenseId,
+                    'description' => 'Pago de gasto: ' . $data['description'],
+                    'user_id' => $this->session->get('id'),
+                    'date' => date('Y-m-d H:i:s')
+                ]);
+                $this->accountModel->decreaseBalance($accountId, $data['amount']);
+            }
+
             return redirect()->to('/expenses')->with('success', 'Gasto registrado correctamente');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->expenseModel->errors());

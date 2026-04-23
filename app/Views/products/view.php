@@ -67,14 +67,11 @@ helper('permission');
                                         </span></p>
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Precio de Venta:</strong> <span class="text-success font-weight-bold">$
-                                            <?= number_format($product['price'], 0, ',', '.') ?>
+                                    <p><strong>Precio de Venta:</strong> <span class="text-success font-weight-bold"><?= formato_moneda($product['price']) ?>
                                         </span></p>
-                                    <p><strong>Precio Mínimo:</strong> $
-                                        <?= number_format($product['min_sale_price'], 0, ',', '.') ?>
+                                    <p><strong>Precio Mínimo:</strong> <?= formato_moneda($product['min_sale_price']) ?>
                                     </p>
-                                    <p><strong>Costo:</strong> $
-                                        <?= number_format($product['cost_price'], 0, ',', '.') ?>
+                                    <p><strong>Costo:</strong> <?= formato_moneda($product['cost_price']) ?>
                                     </p>
                                 </div>
                             </div>

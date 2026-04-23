@@ -65,11 +65,11 @@ helper('permission');
                                             <td><code><?= esc($product['code']) ?></code></td>
                                             <td><strong><?= esc($product['name']) ?></strong></td>
                                             <td><?= esc($product['category_name']) ?></td>
-                                            <td class="text-muted">$<?= number_format($product['cost_price'] ?? 0, 2) ?></td>
+                                            <td class="text-muted"><?= formato_moneda($product['cost_price'] ?? 0) ?></td>
                                             <td class="text-primary font-weight-bold">
-                                                $<?= number_format($product['price'], 2) ?></td>
+                                                <?= formato_moneda($product['price']) ?></td>
                                             <td class="text-muted small">
-                                                $<?= number_format($product['min_sale_price'] ?? 0, 2) ?></td>
+                                                <?= formato_moneda($product['min_sale_price'] ?? 0) ?></td>
                                             <td>
                                                 <span
                                                     class="badge <?= $product['stock'] <= 10 ? 'badge-danger' : 'badge-success' ?>">

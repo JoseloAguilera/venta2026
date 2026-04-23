@@ -37,7 +37,7 @@ helper('permission');
 
             <div class="card" style="margin-bottom: 1.5rem;">
                 <div class="card-body">
-                    <h4>Total de Gastos: <span class="text-danger">$<?= number_format($total, 2) ?></span></h4>
+                    <h4>Total de Gastos: <span class="text-danger"><?= formato_moneda($total) ?></span></h4>
                 </div>
             </div>
 
@@ -65,7 +65,7 @@ helper('permission');
                                             </td>
                                             <td><?= esc($expense['description']) ?></td>
                                             <td class="text-danger">
-                                                <strong>$<?= number_format($expense['amount'], 2) ?></strong>
+                                                <strong><?= formato_moneda($expense['amount']) ?></strong>
                                             </td>
                                             <td><?= esc($expense['username']) ?></td>
                                             <td>

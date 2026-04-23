@@ -103,7 +103,16 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                             <div class="col-md-6">
                                 <h4 class="mb-3">Seguridad y Validaciones</h4>
                                 
-                                <div class="alert alert-warning">
+                                <div class="form-group">
+                                    <label for="currency" class="form-label">Moneda Principal del Sistema *</label>
+                                    <select id="currency" name="currency" class="form-control" required>
+                                        <option value="USD" <?= (old('currency', $settings['currency'] ?? 'USD') == 'USD') ? 'selected' : '' ?>>Dólares (US$)</option>
+                                        <option value="PYG" <?= (old('currency', $settings['currency'] ?? 'USD') == 'PYG') ? 'selected' : '' ?>>Guaraníes (Gs.)</option>
+                                    </select>
+                                    <small class="text-muted">Determina cómo se muestran todos los valores y si contienen decimales.</small>
+                                </div>
+
+                                <div class="alert alert-warning mt-4">
                                     <strong>Importante:</strong> Esta contraseña se solicitará cuando un vendedor intente vender un producto por debajo del precio mínimo establecido.
                                 </div>
 

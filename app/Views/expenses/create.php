@@ -69,6 +69,19 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                         </div>
 
                         <div class="form-group">
+                            <label for="account_id" class="form-label">Caja / Cuenta Origén</label>
+                            <select id="account_id" name="account_id" class="form-control">
+                                <option value="">No registrar salida de dinero</option>
+                                <?php if (!empty($accounts)): ?>
+                                    <?php foreach ($accounts as $account): ?>
+                                        <option value="<?= $account['id'] ?>"><?= esc($account['name']) ?> (<?= $account['type'] ?>)</option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                            <small class="text-muted">Si selecciona una cuenta, se registrará automáticamente el descuento del dinero.</small>
+                        </div>
+
+                        <div class="form-group">
                             <label for="description" class="form-label">Descripción *</label>
                             <input 
                                 type="text" 

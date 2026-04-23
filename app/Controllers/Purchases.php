@@ -7,6 +7,8 @@ use App\Models\PurchaseDetailModel;
 use App\Models\SupplierModel;
 use App\Models\ProductModel;
 use App\Models\WarehouseModel;
+use App\Models\AccountModel;
+use App\Models\TransactionModel;
 
 class Purchases extends BaseController
 {
@@ -15,6 +17,8 @@ class Purchases extends BaseController
     protected $supplierModel;
     protected $productModel;
     protected $warehouseModel;
+    protected $accountModel;
+    protected $transactionModel;
     protected $session;
     protected $db;
 
@@ -25,6 +29,8 @@ class Purchases extends BaseController
         $this->supplierModel = new SupplierModel();
         $this->productModel = new ProductModel();
         $this->warehouseModel = new WarehouseModel();
+        $this->accountModel = new AccountModel();
+        $this->transactionModel = new TransactionModel();
         $this->session = session();
         $this->db = \Config\Database::connect();
         helper(['form', 'url', 'permission']);
@@ -53,6 +59,7 @@ class Purchases extends BaseController
             'suppliers' => $this->supplierModel->findAll(),
             'products' => $this->productModel->getProductsWithCategory(),
             'warehouses' => $this->warehouseModel->getActiveWarehouses(), // Add warehouses
+            'accounts' => $this->accountModel->where('status', 1)->findAll(),
             'purchase_number' => $this->purchaseModel->generatePurchaseNumber()
         ];
 
@@ -70,6 +77,7 @@ class Purchases extends BaseController
             $supplierId = $this->request->getPost('supplier_id');
             $warehouseId = $this->request->getPost('warehouse_id'); // Get warehouse_id
             $paymentType = $this->request->getPost('payment_type');
+            $accountId = $this->request->getPost('account_id');
             $products = $this->request->getPost('products');
 
             if (empty($products)) {
@@ -105,9 +113,22 @@ class Purchases extends BaseController
 
             $purchaseId = $this->purchaseModel->insert($purchaseData);
 
-
             if (!$purchaseId) {
                 return redirect()->back()->with('error', 'Error de validación: ' . print_r($this->purchaseModel->errors(), true));
+            }
+
+            if (!empty($accountId)) {
+                $this->transactionModel->insert([
+                    'account_id' => $accountId,
+                    'type' => 'expense',
+                    'amount' => $total,
+                    'reference_type' => 'purchase',
+                    'reference_id' => $purchaseId,
+                    'description' => 'Pago de compra #' . $purchaseData['purchase_number'],
+                    'user_id' => $this->session->get('id'),
+                    'date' => date('Y-m-d H:i:s')
+                ]);
+                $this->accountModel->decreaseBalance($accountId, $total);
             }
 
             // Crear detalles y actualizar stock

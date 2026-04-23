@@ -8,6 +8,8 @@ use App\Models\CustomerModel;
 use App\Models\ProductModel;
 use App\Models\WarehouseModel;
 use App\Models\ProductStockModel;
+use App\Models\AccountModel;
+use App\Models\TransactionModel;
 
 class Sales extends BaseController
 {
@@ -17,6 +19,8 @@ class Sales extends BaseController
     protected $productModel;
     protected $warehouseModel;
     protected $productStockModel;
+    protected $accountModel;
+    protected $transactionModel;
     protected $session;
     protected $db;
 
@@ -28,6 +32,8 @@ class Sales extends BaseController
         $this->productModel = new ProductModel();
         $this->warehouseModel = new WarehouseModel();
         $this->productStockModel = new ProductStockModel();
+        $this->accountModel = new AccountModel();
+        $this->transactionModel = new TransactionModel();
         $this->session = session();
         $this->db = \Config\Database::connect();
         helper(['form', 'url', 'permission']);
@@ -56,6 +62,7 @@ class Sales extends BaseController
             'customers' => $this->customerModel->findAll(),
             'products' => $this->productModel->getProductsWithCategory(),
             'warehouses' => $this->warehouseModel->getActiveWarehouses(), // Add warehouses
+            'accounts' => $this->accountModel->where('status', 1)->findAll(),
             'sale_number' => $this->saleModel->generateSaleNumber()
         ];
 
@@ -74,6 +81,7 @@ class Sales extends BaseController
             $customerId = $this->request->getPost('customer_id');
             $warehouseId = $this->request->getPost('warehouse_id'); // Get warehouse
             $paymentType = $this->request->getPost('payment_type');
+            $accountId = $this->request->getPost('account_id');
             $products = $this->request->getPost('products');
             $authPassword = $this->request->getPost('auth_password');
 
@@ -140,6 +148,20 @@ class Sales extends BaseController
             ];
 
             $saleId = $this->saleModel->insert($saleData);
+
+            if (!empty($accountId)) {
+                $this->transactionModel->insert([
+                    'account_id' => $accountId,
+                    'type' => 'income',
+                    'amount' => $total,
+                    'reference_type' => 'sale',
+                    'reference_id' => $saleId,
+                    'description' => 'Cobro de venta #' . $saleData['sale_number'],
+                    'user_id' => $this->session->get('id'),
+                    'date' => date('Y-m-d H:i:s')
+                ]);
+                $this->accountModel->increaseBalance($accountId, $total);
+            }
 
             // Crear detalles y actualizar stock
             foreach ($products as $product) {

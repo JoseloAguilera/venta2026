@@ -47,7 +47,8 @@ class Settings extends BaseController
             'company_ruc' => 'required|max_length[20]',
             'company_address' => 'required|max_length[200]',
             'company_email' => 'required|valid_email',
-            'min_price_password' => 'required|min_length[4]'
+            'min_price_password' => 'required|min_length[4]',
+            'currency' => 'required|in_list[USD,PYG]'
         ];
 
         $validation->setRules($rules);
@@ -63,7 +64,8 @@ class Settings extends BaseController
             'company_address',
             'company_email',
             'company_phone',
-            'min_price_password'
+            'min_price_password',
+            'currency'
         ];
 
         foreach ($settings as $key) {

@@ -125,6 +125,23 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                             </div>
                         </div>
 
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="account_id" class="form-label">Caja / Cuenta Origen (Opcional)</label>
+                                    <select id="account_id" name="account_id" class="form-control">
+                                        <option value="">No registrar salida de Caja/Cuenta</option>
+                                        <?php if (!empty($accounts)): ?>
+                                            <?php foreach ($accounts as $account): ?>
+                                                <option value="<?= $account['id'] ?>"><?= esc($account['name']) ?></option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                    <small class="text-muted">Si selecciona una cuenta, se registrará un egreso por el total de la compra.</small>
+                                </div>
+                            </div>
+                        </div>
+
                         <hr>
                         <h4>Productos</h4>
 

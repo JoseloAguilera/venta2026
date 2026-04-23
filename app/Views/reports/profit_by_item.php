@@ -35,7 +35,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                         </div>
                         <div class="col-lg-4 col-md-12 col-sm-12 col-12 d-flex align-items-end justify-content-lg-end justify-content-center mt-3 mt-lg-0">
                             <h4 class="mb-0">
-                                <strong>G. Total: <span class="text-success">$<?= number_format($totalProfit ?? 0, 2) ?></span></strong>
+                                <strong>G. Total: <span class="text-success"><?= formato_moneda($totalProfit ?? 0) ?></span></strong>
                             </h4>
                         </div>
                     </form>
@@ -76,10 +76,10 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                         <td><?= esc($item['product_name']) ?></td>
                                         <td><?= esc($item['product_code']) ?></td>
                                         <td><?= number_format($item['total_qty'], 0) ?></td>
-                                        <td>$<?= number_format($item['total_amount'], 2) ?></td>
-                                        <td>$<?= number_format($item['total_cost'], 2) ?></td>
+                                        <td><?= formato_moneda($item['total_amount']) ?></td>
+                                        <td><?= formato_moneda($item['total_cost']) ?></td>
                                         <td class="<?= $profit >= 0 ? 'text-success' : 'text-danger' ?>">
-                                            <strong>$<?= number_format($profit, 2) ?></strong>
+                                            <strong><?= formato_moneda($profit) ?></strong>
                                         </td>
                                         <td><?= number_format($margin, 2) ?>%</td>
                                     </tr>
@@ -89,9 +89,9 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 <tr>
                                     <td colspan="2" class="text-end"><strong>TOTALES:</strong></td>
                                     <td><strong><?= number_format($grandQty, 0) ?></strong></td>
-                                    <td><strong>$<?= number_format($grandTotal, 2) ?></strong></td>
-                                    <td><strong>$<?= number_format($grandCost, 2) ?></strong></td>
-                                    <td><strong>$<?= number_format($grandProfit, 2) ?></strong></td>
+                                    <td><strong><?= formato_moneda($grandTotal) ?></strong></td>
+                                    <td><strong><?= formato_moneda($grandCost) ?></strong></td>
+                                    <td><strong><?= formato_moneda($grandProfit) ?></strong></td>
                                     <td><strong><?= $grandTotal > 0 ? number_format(($grandProfit / $grandTotal) * 100, 2) : 0 ?>%</strong></td>
                                 </tr>
                             </tfoot>

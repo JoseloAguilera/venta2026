@@ -47,7 +47,7 @@ helper('permission');
                         </div>
                         <div class="col-xl-3 col-lg-12 col-md-12 col-sm-12 col-12 d-flex align-items-end justify-content-xl-end justify-content-center mt-3 mt-xl-0">
                             <h4 class="mb-0">
-                                <strong>Total: <span class="text-success">$<?= number_format($totalSales ?? 0, 2) ?></span></strong>
+                                <strong>Total: <span class="text-success"><?= formato_moneda($totalSales ?? 0) ?></span></strong>
                             </h4>
                         </div>
                     </form>
@@ -81,7 +81,7 @@ helper('permission');
                                                 <?= $sale['payment_type'] === 'cash' ? 'Contado' : 'Crédito' ?>
                                             </span>
                                         </td>
-                                        <td>$<?= number_format($sale['total'], 2) ?></td>
+                                        <td><?= formato_moneda($sale['total']) ?></td>
                                         <td>
                                             <?php
                                             $badges = [

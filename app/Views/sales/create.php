@@ -129,7 +129,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="customer_id" class="form-label">Cliente *</label>
                                     <div class="d-flex gap-2">
@@ -143,15 +143,6 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                         <button type="button" class="btn btn-secondary" id="openCustomerModal"
                                             title="Nuevo Cliente">➕</button>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="payment_type" class="form-label">Tipo de Pago *</label>
-                                    <select id="payment_type" name="payment_type" class="form-control" required>
-                                        <option value="cash">Contado</option>
-                                        <option value="credit">Crédito</option>
-                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -197,8 +188,50 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                         </div>
 
                         <div class="d-flex gap-2" style="margin-top: 20px;">
-                            <button type="submit" class="btn btn-primary">💾 Guardar Venta</button>
+                            <button type="button" class="btn btn-primary" id="openCheckoutBtn">💳 Guardar Venta</button>
                             <a href="<?= base_url('sales') ?>" class="btn btn-secondary">❌ Cancelar</a>
+                        </div>
+
+                        <!-- Checkout Modal (Inside form to submit data) -->
+                        <div id="checkoutModal" class="modal">
+                            <div class="modal-content" style="max-width: 500px;">
+                                <div class="modal-header">
+                                    <h3>Finalizar Venta</h3>
+                                    <span class="modal-close" id="closeCheckoutModal">&times;</span>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="text-center mb-4">
+                                        <h5 class="text-muted">Total a Cobrar</h5>
+                                        <h1 class="text-success display-4" style="font-weight: bold;" id="checkoutDisplayTotal">
+                                            $0.00
+                                        </h1>
+                                    </div>
+                                    <hr>
+                                    <div class="form-group mb-3">
+                                        <label for="payment_type" class="form-label">Tipo de Pago *</label>
+                                        <select id="payment_type" name="payment_type" class="form-control" required>
+                                            <option value="cash">Contado (Efectivo/Caja)</option>
+                                            <option value="credit">Crédito (A cuenta)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group mb-4">
+                                        <label for="account_id" class="form-label">Caja / Cuenta Destino (Opcional)</label>
+                                        <select id="account_id" name="account_id" class="form-control">
+                                            <option value="">No registrar (o Crédito)</option>
+                                            <?php if (!empty($accounts)): ?>
+                                                <?php foreach ($accounts as $account): ?>
+                                                    <option value="<?= $account['id'] ?>"><?= esc($account['name']) ?></option>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </select>
+                                        <small class="text-muted">Seleccione la caja si el cliente paga al instante.</small>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-secondary btn-lg" id="cancelCheckout">Volver</button>
+                                        <button type="submit" class="btn btn-success btn-lg">✅ Confirmar Venta</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -286,15 +319,20 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
         const authModal = document.getElementById('authModal');
         const customerModal = document.getElementById('customerModal');
 
+        const checkoutModal = document.getElementById('checkoutModal');
+
         const openProductBtn = document.getElementById('openProductModal');
         const openCustomerBtn = document.getElementById('openCustomerModal');
+        const openCheckoutBtn = document.getElementById('openCheckoutBtn');
 
         const closeProductBtn = document.getElementById('closeProductModal');
         const closeAuthBtn = document.getElementById('closeAuthModal');
         const closeCustomerBtn = document.getElementById('closeCustomerModal');
+        const closeCheckoutModal = document.getElementById('closeCheckoutModal');
 
         const cancelAuthBtn = document.getElementById('cancelAuth');
         const cancelCustomerBtn = document.getElementById('cancelCustomer');
+        const cancelCheckout = document.getElementById('cancelCheckout');
 
         const confirmAuthBtn = document.getElementById('confirmAuth');
 
@@ -500,10 +538,14 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
         closeAuthBtn.onclick = cancelAuth;
         cancelAuthBtn.onclick = cancelAuth;
 
+        closeCheckoutModal.onclick = () => checkoutModal.style.display = "none";
+        cancelCheckout.onclick = () => checkoutModal.style.display = "none";
+
         window.onclick = (event) => {
             if (event.target == productModal) productModal.style.display = "none";
             if (event.target == authModal) cancelAuth();
             if (event.target == customerModal) customerModal.style.display = "none";
+            if (event.target == checkoutModal) checkoutModal.style.display = "none";
         }
 
         // --- Customer Logic ---
@@ -702,17 +744,43 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                 });
         });
 
-        // Form Validation
-        form.addEventListener('submit', function (e) {
+        // Checkout Interceptor
+        openCheckoutBtn.addEventListener('click', function () {
             if (!warehouseSelect.value) {
-                e.preventDefault();
-                alert('Seleccione un depósito');
+                alert('Seleccione un depósito antes de finalizar');
+                window.scrollTo(0, 0);
                 return;
             }
 
             if (productsContainer.children.length === 0) {
+                alert('Debe agregar al menos un producto a la venta');
+                return;
+            }
+
+            if (!customerSelect.value) {
+                alert('Seleccione un cliente antes de finalizar');
+                window.scrollTo(0, 0);
+                return;
+            }
+
+            // Sync total amount visually into modal
+            const formTotalNode = document.getElementById('totalAmount');
+            const totalPrefix = formTotalNode.parentElement.innerHTML; // e.g. "Total: $<span>123.45</span>"
+            // We just grab the content of the H3, but only the number part with symbol
+            let rawHtml = totalPrefix.replace('Total:', '').trim(); // e.g. "$<span>123.45</span>"
+            // Wait, an easier way: Total could be formatted differently depending on global settings.
+            // But we know 'checkoutDisplayTotal' accepts HTML.
+            document.getElementById('checkoutDisplayTotal').innerHTML = rawHtml;
+
+            // Auto select 'cash' or 'credit' if desired, but we leave user selection
+            checkoutModal.style.display = 'block';
+        });
+
+        // Form Validation fallback (still fires after Checkout Confirm)
+        form.addEventListener('submit', function (e) {
+            if (!warehouseSelect.value || productsContainer.children.length === 0) {
                 e.preventDefault();
-                alert('Debe agregar al menos un producto');
+                alert('Faltan completar datos del depósito o productos');
             }
         });
     });

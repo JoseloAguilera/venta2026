@@ -62,7 +62,7 @@ helper('permission');
                                                     <?= $sale['payment_type'] === 'cash' ? 'Contado' : 'Crédito' ?>
                                                 </span>
                                             </td>
-                                            <td>$<?= number_format($sale['total'], 2) ?></td>
+                                            <td><?= formato_moneda($sale['total']) ?></td>
                                             <td>
                                                 <?php
                                                 $badges = [

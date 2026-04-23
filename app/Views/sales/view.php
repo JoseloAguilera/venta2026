@@ -70,7 +70,7 @@ helper('permission');
                             </p>
                             <?php if ($sale['payment_type'] === 'credit'): ?>
                                 <p><strong>Saldo Pendiente:</strong> <span
-                                        class="text-danger">$<?= number_format($pending_balance, 2) ?></span></p>
+                                        class="text-danger"><?= formato_moneda($pending_balance) ?></span></p>
                             <?php endif; ?>
                             <p><strong>Vendedor:</strong> <?= esc($sale['user_name']) ?></p>
                         </div>
@@ -104,23 +104,23 @@ helper('permission');
                                             <?php endif; ?>
                                         </td>
                                         <td><?= $detail['quantity'] ?></td>
-                                        <td>$<?= number_format($detail['price'], 2) ?></td>
-                                        <td>$<?= number_format($detail['subtotal'], 2) ?></td>
+                                        <td><?= formato_moneda($detail['price']) ?></td>
+                                        <td><?= formato_moneda($detail['subtotal']) ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <td colspan="4" class="text-right"><strong>Subtotal:</strong></td>
-                                    <td><strong>$<?= number_format($sale['subtotal'], 2) ?></strong></td>
+                                    <td><strong><?= formato_moneda($sale['subtotal']) ?></strong></td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-right"><strong>Impuestos:</strong></td>
-                                    <td><strong>$<?= number_format($sale['tax'], 2) ?></strong></td>
+                                    <td><strong><?= formato_moneda($sale['tax']) ?></strong></td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-right"><strong>TOTAL:</strong></td>
-                                    <td><strong class="text-primary">$<?= number_format($sale['total'], 2) ?></strong>
+                                    <td><strong class="text-primary"><?= formato_moneda($sale['total']) ?></strong>
                                     </td>
                                 </tr>
                             </tfoot>

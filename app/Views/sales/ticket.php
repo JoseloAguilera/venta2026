@@ -167,8 +167,7 @@
                         <td>
                             <?= esc($detail['product_name']) ?>
                         </td>
-                        <td class="text-right">
-                            <?= number_format($detail['subtotal'], 2, ',', '.') ?>
+                        <td class="text-right"><?= formato_moneda($detail['subtotal']) ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -178,15 +177,13 @@
         <div class="totals">
             <div style="display: flex; justify-content: space-between;">
                 <span>Subtotal:</span>
-                <span>
-                    <?= number_format($sale['subtotal'], 2, ',', '.') ?>
+                <span><?= formato_moneda($sale['subtotal']) ?>
                 </span>
             </div>
             <div
                 style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 5px;">
                 <span>TOTAL:</span>
-                <span>
-                    <?= number_format($sale['total'], 2, ',', '.') ?>
+                <span><?= formato_moneda($sale['total']) ?>
                 </span>
             </div>
         </div>

@@ -114,6 +114,14 @@
         <div class="nav-section">
             <div class="nav-section-title">Finanzas</div>
 
+            <?php if (can_view('accounts')): ?>
+                <a href="<?= base_url('accounts') ?>"
+                    class="nav-link <?= strpos(uri_string(), 'accounts') !== false ? 'active' : '' ?>">
+                    <span class="nav-icon">🏦</span>
+                    <span>Cuentas y Cajas</span>
+                </a>
+            <?php endif; ?>
+
             <?php if (can_view('collections')): ?>
                 <a href="<?= base_url('collections') ?>"
                     class="nav-link <?= strpos(uri_string(), 'collections') !== false ? 'active' : '' ?>">

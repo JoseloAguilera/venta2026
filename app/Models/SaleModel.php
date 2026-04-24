@@ -37,11 +37,18 @@ class SaleModel extends Model
      */
     public function getSalesWithDetails()
     {
-        return $this->select('sales.*, customers.name as customer_name, users.username as user_name')
+        $db = \Config\Database::connect();
+        return $db->table('sales')
+            ->select('sales.*, customers.name as customer_name, users.username as user_name,
+                COALESCE((SELECT GROUP_CONCAT(sd.description SEPARATOR " | ")
+                          FROM sale_details sd
+                          WHERE sd.sale_id = sales.id AND sd.description IS NOT NULL AND sd.description != ""
+                ), "") as observations')
             ->join('customers', 'customers.id = sales.customer_id')
             ->join('users', 'users.id = sales.user_id')
             ->orderBy('sales.date', 'DESC')
-            ->findAll();
+            ->get()
+            ->getResultArray();
     }
 
     /**

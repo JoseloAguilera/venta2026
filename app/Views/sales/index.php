@@ -36,6 +36,15 @@ helper('permission');
 
             <div class="card">
                 <div class="card-body">
+
+                    <!-- Filtro por observación -->
+                    <div class="mb-3 d-flex align-items-center gap-2" style="max-width: 500px;">
+                        <span style="white-space:nowrap; font-weight:600;">🔍 Buscar por observación:</span>
+                        <input type="text" id="obsSearch" class="form-control form-control-sm"
+                            placeholder="Ej: IMEI, número de serie..." autocomplete="off">
+                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('obsSearch').value=''; table.column(7).search('').draw();">✕</button>
+                    </div>
+
                     <div class="table-responsive">
                         <table id="salesTable" class="table table-striped table-hover">
                             <thead>
@@ -47,6 +56,7 @@ helper('permission');
                                     <th>Total</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
+                                    <th style="display:none;">Observaciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -101,6 +111,8 @@ helper('permission');
                                                     </a>
                                                 <?php endif; ?>
                                             </td>
+                                            <!-- Columna oculta: observaciones para filtro -->
+                                            <td style="display:none;"><?= esc($sale['observations'] ?? '') ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -120,13 +132,29 @@ $extraJS = [
 ];
 $scripts = "
 <script>
+    var table;
     function openTicket(url) {
         window.open(url, 'Ticket', 'width=400,height=600,scrollbars=yes');
     }
 
     $(document).ready(function () {
-        $('#salesTable').DataTable({
-            'order': [[0, 'desc']] // Order by Sale Number descending
+        table = $('#salesTable').DataTable({
+            'order': [[0, 'desc']],
+            'columnDefs': [
+                { targets: 7, visible: false, searchable: true }
+            ],
+            language: {
+                search: 'Buscar en tabla:',
+                lengthMenu: 'Mostrar _MENU_ registros',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ ventas',
+                paginate: { previous: 'Anterior', next: 'Siguiente' },
+                zeroRecords: 'No se encontraron ventas'
+            }
+        });
+
+        // Búsqueda por observación (columna 7 oculta)
+        $('#obsSearch').on('keyup', function () {
+            table.column(7).search(this.value).draw();
         });
     });
 </script>

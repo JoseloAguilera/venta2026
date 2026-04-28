@@ -145,4 +145,53 @@ class Categories extends BaseController
             return redirect()->to('/categories')->with('error', 'No se pudo eliminar la categoría');
         }
     }
+
+    public function ajaxStore()
+    {
+        // Check insert permission
+        if (!has_permission('categories', 'insert')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => ['auth' => 'No tiene permiso para crear categorías']
+            ]);
+        }
+
+        $validation = \Config\Services::validation();
+
+        $validation->setRules([
+            'name' => 'required|min_length[3]|max_length[100]',
+            'description' => 'permit_empty|max_length[500]'
+        ], [
+            'name' => [
+                'required' => 'El nombre es requerido',
+                'min_length' => 'El nombre debe tener al menos 3 caracteres',
+                'max_length' => 'El nombre no puede exceder los 100 caracteres'
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => $validation->getErrors()
+            ]);
+        }
+
+        $data = [
+            'name' => $this->request->getPost('name'),
+            'description' => $this->request->getPost('description')
+        ];
+
+        if ($this->categoryModel->insert($data)) {
+            $data['id'] = $this->categoryModel->getInsertID();
+            return $this->response->setJSON([
+                'success' => true,
+                'category' => $data
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'errors' => $this->categoryModel->errors()
+            ]);
+        }
+    }
 }

@@ -48,6 +48,7 @@ $routes->group('categories', ['filter' => 'auth'], function ($routes) {
     $routes->get('edit/(:num)', 'Categories::edit/$1');
     $routes->post('update/(:num)', 'Categories::update/$1');
     $routes->get('delete/(:num)', 'Categories::delete/$1');
+    $routes->post('ajax-store', 'Categories::ajaxStore');
 });
 
 // Customers module (requires authentication)

@@ -3,7 +3,50 @@ $extraCSS = ['assets/css/dashboard.css'];
 echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 ?>
 
-<div class="dashboard-wrapper">
+<style>
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .modal-close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .modal-close:hover,
+    .modal-close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style><div class="dashboard-wrapper">
     <?= view('templates/sidebar') ?>
 
     <div class="main-content">
@@ -32,14 +75,17 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                         <div class="form-group">
                             <label for="category_id" class="form-label">Categoría *</label>
-                            <select id="category_id" name="category_id" class="form-control" required>
-                                <option value="">Seleccione una categoría</option>
-                                <?php foreach ($categories as $category): ?>
-                                    <option value="<?= $category['id'] ?>" <?= old('category_id', $product['category_id']) == $category['id'] ? 'selected' : '' ?>>
-                                        <?= esc($category['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div class="d-flex gap-2">
+                                <select id="category_id" name="category_id" class="form-control" required>
+                                    <option value="">Seleccione una categoría</option>
+                                    <?php foreach ($categories as $category): ?>
+                                        <option value="<?= $category['id'] ?>" <?= old('category_id', $product['category_id']) == $category['id'] ? 'selected' : '' ?>>
+                                            <?= esc($category['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="button" class="btn btn-secondary" id="openCategoryModal" title="Nueva Categoría">➕</button>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -108,5 +154,96 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
         </div>
     </div>
 </div>
+
+<!-- Category Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Nueva Categoría</h3>
+            <span class="modal-close" id="closeCategoryModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="description" class="form-control"></textarea>
+                </div>
+                <div id="categoryError" class="alert alert-danger" style="display:none; margin-top: 10px;"></div>
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="button" class="btn btn-secondary" id="cancelCategory">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Categoría</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const categoryModal = document.getElementById('categoryModal');
+    const openCategoryBtn = document.getElementById('openCategoryModal');
+    const closeCategoryBtn = document.getElementById('closeCategoryModal');
+    const cancelCategoryBtn = document.getElementById('cancelCategory');
+    const categoryForm = document.getElementById('categoryForm');
+    const categorySelect = document.getElementById('category_id');
+
+    if(openCategoryBtn) {
+        openCategoryBtn.onclick = () => {
+            categoryModal.style.display = "block";
+            categoryForm.reset();
+            document.getElementById('categoryError').style.display = 'none';
+        };
+    }
+
+    if(closeCategoryBtn) closeCategoryBtn.onclick = () => categoryModal.style.display = "none";
+    if(cancelCategoryBtn) cancelCategoryBtn.onclick = () => categoryModal.style.display = "none";
+
+    window.onclick = (event) => {
+        if (event.target == categoryModal) categoryModal.style.display = "none";
+    };
+
+    if(categoryForm) {
+        categoryForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('<?= base_url('categories/ajax-store') ?>', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const option = new Option(data.category.name, data.category.id);
+                    categorySelect.add(option, undefined);
+                    categorySelect.value = data.category.id;
+                    
+                    if ($(categorySelect).hasClass('select2-hidden-accessible')) {
+                        $(categorySelect).trigger('change.select2');
+                    }
+
+                    categoryModal.style.display = "none";
+                    alert('Categoría creada exitosamente');
+                } else {
+                    const errorDiv = document.getElementById('categoryError');
+                    errorDiv.innerHTML = Object.values(data.errors).join('<br>');
+                    errorDiv.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            });
+        });
+    }
+});
+</script>
 
 <?php echo view('templates/footer'); ?>

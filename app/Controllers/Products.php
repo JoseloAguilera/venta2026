@@ -32,6 +32,49 @@ class Products extends BaseController
         return view('products/index', $data);
     }
 
+    public function print()
+    {
+        // Check view permission
+        require_permission('products', 'view');
+
+        $type = $this->request->getGet('type') ?? 'general';
+        
+        $titles = [
+            'stock' => 'Listado de Stock',
+            'price' => 'Listado de Precios',
+            'general' => 'Listado General de Productos'
+        ];
+
+        $data = [
+            'title' => $titles[$type] ?? 'Listado de Productos',
+            'type' => $type,
+            'products' => $this->productModel->getProductsWithCategory()
+        ];
+
+        // Generate PDF using Dompdf
+        $html = view('products/print', $data);
+        
+        $dompdf = new \Dompdf\Dompdf();
+        
+        // Optional: configure dompdf
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+        $dompdf->setOptions($options);
+        
+        $dompdf->loadHtml($html);
+        
+        // Setup paper size and orientation
+        $dompdf->setPaper('A4', 'portrait');
+        
+        // Render the HTML as PDF
+        $dompdf->render();
+        
+        // Output the generated PDF to Browser
+        $dompdf->stream('productos_' . $type . '_' . date('Ymd_Hi') . '.pdf', ['Attachment' => false]);
+        exit();
+    }
+
     public function create()
     {
         // Check insert permission

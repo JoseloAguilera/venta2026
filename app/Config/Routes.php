@@ -26,6 +26,7 @@ $routes->get('dashboard', 'Dashboard::index', ['filter' => 'auth']);
 // Products module (requires authentication)
 $routes->group('products', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Products::index');
+    $routes->get('print', 'Products::print');
     $routes->get('view/(:num)', 'Products::view/$1');
     $routes->get('create', 'Products::create');
     $routes->post('store', 'Products::store');

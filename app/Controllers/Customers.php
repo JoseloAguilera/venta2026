@@ -148,10 +148,15 @@ class Customers extends BaseController
         // Check delete permission
         require_permission('customers', 'delete');
 
-        // Check if customer has sales
+        // Check if customer has sales or payments
         $saleModel = new \App\Models\SaleModel();
-        if ($saleModel->where('customer_id', $id)->countAllResults() > 0) {
-            return redirect()->to('/customers')->with('error', 'No se puede eliminar el cliente porque tiene ventas asociadas');
+        $salesCount = $saleModel->where('customer_id', $id)->countAllResults();
+
+        $paymentModel = new \App\Models\CustomerPaymentModel();
+        $paymentsCount = $paymentModel->where('customer_id', $id)->countAllResults();
+
+        if ($salesCount > 0 || $paymentsCount > 0) {
+            return redirect()->to('/customers')->with('error', "No se puede eliminar el cliente porque ya tiene registros asociados en el sistema. Movimientos registrados: {$salesCount} venta(s), {$paymentsCount} pago(s)/cobranza(s).");
         }
 
         if ($this->customerModel->delete($id)) {

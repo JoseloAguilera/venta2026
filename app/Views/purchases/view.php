@@ -14,6 +14,9 @@ helper('permission');
                 <h2><?= $title ?></h2>
             </div>
             <div class="topbar-actions">
+                <button type="button" class="btn btn-warning" onclick="promptEditObservations()">
+                    📝 Editar Observaciones
+                </button>
                 <?php if ($purchase['payment_type'] === 'credit' && $pending_balance > 0 && can_insert('payments')): ?>
                 <a href="<?= base_url('payments/create/' . $purchase['id']) ?>" class="btn btn-success">
                     💳 Registrar Pago
@@ -26,6 +29,16 @@ helper('permission');
         </div>
 
         <div class="content-area">
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="alert alert-success">
+                    <?= session()->getFlashdata('success') ?>
+                </div>
+            <?php endif; ?>
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="alert alert-danger">
+                    <?= session()->getFlashdata('error') ?>
+                </div>
+            <?php endif; ?>
             <div class="card">
                 <div class="card-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
@@ -73,7 +86,12 @@ helper('permission');
                                 <?php foreach ($purchase['details'] as $detail): ?>
                                     <tr>
                                         <td><?= esc($detail['product_code']) ?></td>
-                                        <td><?= esc($detail['product_name']) ?></td>
+                                        <td>
+                                            <?= esc($detail['product_name']) ?>
+                                            <?php if (!empty($detail['description'])): ?>
+                                                <br><small class="text-muted"><?= nl2br(esc($detail['description'])) ?></small>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?= $detail['quantity'] ?></td>
                                         <td><?= formato_moneda($detail['price']) ?></td>
                                         <td><?= formato_moneda($detail['subtotal']) ?></td>
@@ -101,5 +119,119 @@ helper('permission');
         </div>
     </div>
 </div>
+
+<div id="editObservationsModal" class="modal"
+    style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content"
+        style="background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px;">
+        <div class="modal-header"
+            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Editar Observaciones</h2>
+            <span class="close" onclick="closeEditModal()"
+                style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        </div>
+        <form action="<?= base_url('purchases/update-observations/' . $purchase['id']) ?>" method="POST">
+            <?= csrf_field() ?>
+            <input type="hidden" name="auth_password" id="modal_auth_password" value="">
+            <div class="modal-body" style="max-height: 50vh; overflow-y: auto;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Observación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($purchase['details'] as $detail): ?>
+                                <tr>
+                                    <td><?= esc($detail['product_name']) ?></td>
+                                    <td>
+                                        <textarea name="observations[<?= $detail['id'] ?>]" class="form-control" rows="2"
+                                            style="width: 100%;"><?= esc($detail['description']) ?></textarea>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer"
+                style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #ddd; padding-top: 15px; margin-top: 20px;">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function promptEditObservations() {
+        Swal.fire({
+            title: 'Autorización Requerida',
+            text: 'Ingrese la contraseña de precio mínimo',
+            input: 'password',
+            inputAttributes: {
+                autocapitalize: 'off',
+                autocorrect: 'off'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Verificar',
+            cancelButtonText: 'Cancelar',
+            showLoaderOnConfirm: true,
+            preConfirm: (password) => {
+                if (!password) {
+                    Swal.showValidationMessage('La contraseña es requerida');
+                    return false;
+                }
+
+                return fetch('<?= base_url('sales/validate-auth') ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'password=' + encodeURIComponent(password)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(response.statusText)
+                        }
+                        return response.json()
+                    })
+                    .then(data => {
+                        if (!data.valid) {
+                            Swal.showValidationMessage('Contraseña incorrecta');
+                            return false;
+                        }
+                        return password;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error de red: ${error}`)
+                    });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('modal_auth_password').value = result.value;
+                document.getElementById('editObservationsModal').style.display = 'block';
+            }
+        });
+    }
+
+    function closeEditModal() {
+        document.getElementById('editObservationsModal').style.display = 'none';
+        document.getElementById('modal_auth_password').value = '';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+        let modal = document.getElementById('editObservationsModal');
+        if (event.target == modal) {
+            closeEditModal();
+        }
+    }
+</script>
 
 <?php echo view('templates/footer'); ?>

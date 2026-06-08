@@ -46,6 +46,7 @@ helper('permission');
                                     <th>Tipo</th>
                                     <th>Total</th>
                                     <th>Estado</th>
+                                    <th style="display:none;">Observaciones</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -82,6 +83,7 @@ helper('permission');
                                                     <?= $labels[$purchase['status']] ?? $purchase['status'] ?>
                                                 </span>
                                             </td>
+                                            <td style="display:none;"><?= esc($purchase['observations'] ?? '') ?></td>
                                             <td>
                                                 <a href="<?= base_url('purchases/view/' . $purchase['id']) ?>"
                                                     class="btn btn-sm btn-primary" title="Ver">

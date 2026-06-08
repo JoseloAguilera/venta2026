@@ -147,7 +147,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                         <div id="products-container">
                             <div class="product-row"
-                                style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: end;">
+                                style="display: grid; grid-template-columns: 2fr 1fr 1fr 2fr 1.2fr auto; gap: 10px; margin-bottom: 10px; align-items: end;">
                                 <div class="form-group" style="margin: 0;">
                                     <label class="form-label">Producto</label>
                                     <select class="form-control product-select" required>
@@ -166,6 +166,10 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 <div class="form-group" style="margin: 0;">
                                     <label class="form-label">Precio</label>
                                     <input type="number" class="form-control price-input" step="0.01" required>
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label">Observación / Descripción</label>
+                                    <textarea class="form-control description-input" rows="1" style="font-size: 0.85rem; height: 38px; min-height: 38px; resize: vertical;" placeholder="IMEI / Serie / Obs..."></textarea>
                                 </div>
                                 <div class="form-group" style="margin: 0;">
                                     <label class="form-label">Subtotal</label>
@@ -308,6 +312,9 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
             newRow.querySelectorAll('input').forEach(input => {
                 input.value = input.type === 'number' ? '1' : '';
             });
+            newRow.querySelectorAll('textarea').forEach(textarea => {
+                textarea.value = '';
+            });
 
             container.appendChild(newRow);
 
@@ -370,12 +377,14 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                 const productId = row.querySelector('.product-select').value;
                 const quantity = row.querySelector('.quantity-input').value;
                 const price = row.querySelector('.price-input').value;
+                const description = row.querySelector('.description-input') ? row.querySelector('.description-input').value : '';
 
                 if (productId && quantity && price) {
                     products.push({
                         product_id: productId,
                         quantity: quantity,
-                        price: price
+                        price: price,
+                        description: description
                     });
                 }
             });
@@ -384,6 +393,9 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                 alert('Debe agregar al menos un producto');
                 return;
             }
+
+            // Remove any previously appended hidden inputs to avoid duplicates
+            form.querySelectorAll('input[name^="products["]').forEach(input => input.remove());
 
             products.forEach((product, index) => {
                 Object.keys(product).forEach(key => {

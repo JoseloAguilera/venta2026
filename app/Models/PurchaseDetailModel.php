@@ -12,7 +12,7 @@ class PurchaseDetailModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['purchase_id', 'product_id', 'quantity', 'price', 'subtotal'];
+    protected $allowedFields    = ['purchase_id', 'product_id', 'quantity', 'price', 'subtotal', 'description'];
 
     // Validation
     protected $validationRules      = [

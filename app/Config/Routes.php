@@ -96,6 +96,7 @@ $routes->group('purchases', ['filter' => 'auth'], function ($routes) {
     $routes->post('store', 'Purchases::store');
     $routes->get('view/(:num)', 'Purchases::view/$1');
     $routes->get('annul/(:num)', 'Purchases::annul/$1');
+    $routes->post('update-observations/(:num)', 'Purchases::updateObservations/$1');
 });
 
 // Collections module (requires authentication)

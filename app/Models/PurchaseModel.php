@@ -37,11 +37,18 @@ class PurchaseModel extends Model
      */
     public function getPurchasesWithDetails()
     {
-        return $this->select('purchases.*, suppliers.name as supplier_name, users.username as user_name')
+        $db = \Config\Database::connect();
+        return $db->table('purchases')
+                    ->select('purchases.*, suppliers.name as supplier_name, users.username as user_name,
+                        COALESCE((SELECT GROUP_CONCAT(pd.description SEPARATOR " | ")
+                                  FROM purchase_details pd
+                                  WHERE pd.purchase_id = purchases.id AND pd.description IS NOT NULL AND pd.description != ""
+                        ), "") as observations')
                     ->join('suppliers', 'suppliers.id = purchases.supplier_id')
                     ->join('users', 'users.id = purchases.user_id')
                     ->orderBy('purchases.date', 'DESC')
-                    ->findAll();
+                    ->get()
+                    ->getResultArray();
     }
 
     /**

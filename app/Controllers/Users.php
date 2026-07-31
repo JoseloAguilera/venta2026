@@ -195,7 +195,7 @@ class Users extends BaseController
             $userData['password'] = $password; // UserModel hashes this automatically
         }
 
-        if ($this->userModel->update($id, $userData)) {
+        if ($this->userModel->skipValidation(true)->update($id, $userData)) {
             return redirect()->to('/users')->with('success', 'Usuario actualizado correctamente');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->userModel->errors());

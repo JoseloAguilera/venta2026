@@ -38,12 +38,17 @@ class PurchaseModel extends Model
     public function getPurchasesWithDetails()
     {
         $db = \Config\Database::connect();
+        $hasDescription = $db->fieldExists('description', 'purchase_details');
+
+        $obsSelect = $hasDescription
+            ? 'COALESCE((SELECT GROUP_CONCAT(pd.description SEPARATOR " | ")
+                      FROM purchase_details pd
+                      WHERE pd.purchase_id = purchases.id AND pd.description IS NOT NULL AND pd.description != ""
+            ), "") as observations'
+            : '"" as observations';
+
         return $db->table('purchases')
-                    ->select('purchases.*, suppliers.name as supplier_name, users.username as user_name,
-                        COALESCE((SELECT GROUP_CONCAT(pd.description SEPARATOR " | ")
-                                  FROM purchase_details pd
-                                  WHERE pd.purchase_id = purchases.id AND pd.description IS NOT NULL AND pd.description != ""
-                        ), "") as observations')
+                    ->select('purchases.*, suppliers.name as supplier_name, users.username as user_name, ' . $obsSelect)
                     ->join('suppliers', 'suppliers.id = purchases.supplier_id')
                     ->join('users', 'users.id = purchases.user_id')
                     ->orderBy('purchases.date', 'DESC')

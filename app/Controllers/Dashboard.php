@@ -56,6 +56,11 @@ class Dashboard extends BaseController
         // --- Financial Stats ---
         $receivables = $saleModel->getTotalReceivables();
 
+        // --- Cash Session State ---
+        $cashSessionModel = new \App\Models\CashSessionModel();
+        $userId = $this->session->get('id') ?? $this->session->get('user_id');
+        $activeCashSession = $cashSessionModel->getActiveSessionForUser($userId);
+
         // Get user data
         $data = [
             'title' => 'Dashboard',
@@ -63,6 +68,7 @@ class Dashboard extends BaseController
                 'username' => $this->session->get('username'),
                 'role' => $this->session->get('role')
             ],
+            'activeCashSession' => $activeCashSession,
             'stats' => [
                 'sales_today' => $salesToday,
                 'sales_change' => $salesChange,

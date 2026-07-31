@@ -98,6 +98,34 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
         </div>
 
         <div class="content-area">
+            <?php if (empty($activeSession)): ?>
+                <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <strong>⚠️ Atención:</strong> No tienes una sesión de caja abierta en este turno.
+                    </div>
+                    <a href="<?= base_url('cash-sessions/open') ?>" class="btn btn-sm btn-dark">
+                        🔓 Abrir Caja Ahora
+                    </a>
+                </div>
+            <?php if (!empty($activeSession)): ?>
+                <div class="alert alert-success py-2 mb-3">
+                    <small>✔️ Turno de Caja Activo: <strong><?= esc($activeSession['account_name']) ?></strong> (#<?= $activeSession['id'] ?>)</small>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($cashLimitAlert)): ?>
+                <div class="alert alert-warning d-flex justify-content-between align-items-center shadow-sm mb-3" style="border-left: 4px solid #f59e0b;">
+                    <div>
+                        <strong>⚠️ Alerta de Retiro Recomendado:</strong>
+                        La caja acumula actualmente <strong><?= formato_moneda($currentCashBalance) ?></strong> en efectivo.
+                        Se recomienda realizar un <strong>Retiro de Caja</strong> a la Caja Fuerte o Banco por seguridad.
+                    </div>
+                    <a href="<?= base_url('accounts/transfer') ?>" class="btn btn-dark btn-sm fw-bold">
+                        💸 Realizar Retiro Ahora
+                    </a>
+                </div>
+            <?php endif; ?>
+
             <div class="card">
                 <div class="card-body">
                     <?php if (session()->getFlashdata('error')): ?>
@@ -194,41 +222,75 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
 
                         <!-- Checkout Modal (Inside form to submit data) -->
                         <div id="checkoutModal" class="modal">
-                            <div class="modal-content" style="max-width: 500px;">
+                            <div class="modal-content" style="max-width: 600px;">
                                 <div class="modal-header">
-                                    <h3>Finalizar Venta</h3>
+                                    <h3>💳 Finalizar Venta y Cobro</h3>
                                     <span class="modal-close" id="closeCheckoutModal">&times;</span>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="text-center mb-4">
-                                        <h5 class="text-muted">Total a Cobrar</h5>
-                                        <h1 class="text-success display-4" style="font-weight: bold;" id="checkoutDisplayTotal">
+                                    <div class="text-center mb-3">
+                                        <h5 class="text-muted mb-1">Total de la Venta</h5>
+                                        <h1 class="text-success display-4 fw-bold" id="checkoutDisplayTotal">
                                             $0.00
                                         </h1>
                                     </div>
                                     <hr>
                                     <div class="form-group mb-3">
-                                        <label for="payment_type" class="form-label">Tipo de Pago *</label>
-                                        <select id="payment_type" name="payment_type" class="form-control" required>
-                                            <option value="cash">Contado (Efectivo/Caja)</option>
-                                            <option value="credit">Crédito (A cuenta)</option>
+                                        <label for="payment_type" class="form-label font-weight-bold">Condición de Venta *</label>
+                                        <select id="payment_type" name="payment_type" class="form-select" required>
+                                            <option value="cash">Contado (Cobro Inmediato - Multimedio)</option>
+                                            <option value="credit">Crédito / Cuenta Corriente (A cobrar luego)</option>
                                         </select>
                                     </div>
-                                    <div class="form-group mb-4">
-                                        <label for="account_id" class="form-label">Caja / Cuenta Destino (Opcional)</label>
-                                        <select id="account_id" name="account_id" class="form-control">
-                                            <option value="">No registrar (o Crédito)</option>
-                                            <?php if (!empty($accounts)): ?>
-                                                <?php foreach ($accounts as $account): ?>
-                                                    <option value="<?= $account['id'] ?>"><?= esc($account['name']) ?></option>
-                                                <?php endforeach; ?>
-                                            <?php endif; ?>
-                                        </select>
-                                        <small class="text-muted">Seleccione la caja si el cliente paga al instante.</small>
+
+                                    <!-- Sección de Pagos Mixtos / Cajas -->
+                                    <div id="mixedPaymentsContainer" class="mt-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label font-weight-bold mb-0">Desglose de Cobro (Medios de Pago)</label>
+                                            <button type="button" class="btn btn-sm btn-outline-success" id="addPaymentRowBtn">
+                                                ➕ Agregar Medio de Pago
+                                            </button>
+                                        </div>
+
+                                        <table class="table table-bordered align-middle" id="paymentRowsTable">
+                                            <thead>
+                                                <tr class="table-light">
+                                                    <th>Caja / Cuenta Destino</th>
+                                                    <th width="160">Monto ($)</th>
+                                                    <th width="40"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="paymentRowsBody">
+                                                <!-- Fila de pago por defecto -->
+                                                <tr class="payment-row">
+                                                    <td>
+                                                        <select name="payments[0][account_id]" class="form-select payment-account-select" required>
+                                                            <?php if (!empty($accounts)): ?>
+                                                                <?php foreach ($accounts as $account): ?>
+                                                                    <option value="<?= $account['id'] ?>"><?= esc($account['name']) ?></option>
+                                                                <?php endforeach; ?>
+                                                            <?php endif; ?>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" step="0.01" min="0.01" name="payments[0][amount]" class="form-control payment-amount-input" required placeholder="0.00">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger remove-payment-row-btn">&times;</button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded mb-3">
+                                            <span>Cobrado en Medios: <strong id="totalPaidDisplay" class="text-success">$0.00</strong></span>
+                                            <span>Falta Asignar: <strong id="remainingToPayDisplay" class="text-danger">$0.00</strong></span>
+                                        </div>
                                     </div>
-                                    <div class="d-flex justify-content-end gap-2">
+
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
                                         <button type="button" class="btn btn-secondary btn-lg" id="cancelCheckout">Volver</button>
-                                        <button type="submit" class="btn btn-success btn-lg">✅ Confirmar Venta</button>
+                                        <button type="submit" class="btn btn-success btn-lg fw-bold" id="confirmSaleSubmitBtn">✅ Confirmar Venta</button>
                                     </div>
                                 </div>
                             </div>
@@ -744,6 +806,106 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                 });
         });
 
+        // --- Multi-Payment Logic ---
+        const paymentTypeSelect = document.getElementById('payment_type');
+        const mixedPaymentsContainer = document.getElementById('mixedPaymentsContainer');
+        const paymentRowsBody = document.getElementById('paymentRowsBody');
+        const addPaymentRowBtn = document.getElementById('addPaymentRowBtn');
+        const totalPaidDisplay = document.getElementById('totalPaidDisplay');
+        const remainingToPayDisplay = document.getElementById('remainingToPayDisplay');
+        let paymentRowIndex = 1;
+
+        function getSaleTotal() {
+            return parseFloat(totalAmountSpan.textContent) || 0;
+        }
+
+        function calculatePaymentTotals() {
+            const saleTotal = getSaleTotal();
+            let totalPaid = 0;
+
+            document.querySelectorAll('.payment-amount-input').forEach(input => {
+                totalPaid += parseFloat(input.value) || 0;
+            });
+
+            const remaining = Math.max(0, saleTotal - totalPaid);
+
+            totalPaidDisplay.textContent = '$' + totalPaid.toFixed(2);
+            remainingToPayDisplay.textContent = '$' + remaining.toFixed(2);
+
+            if (Math.abs(saleTotal - totalPaid) < 0.01) {
+                remainingToPayDisplay.className = 'text-success';
+            } else {
+                remainingToPayDisplay.className = 'text-danger';
+            }
+        }
+
+        paymentTypeSelect.addEventListener('change', function () {
+            if (this.value === 'credit') {
+                mixedPaymentsContainer.style.display = 'none';
+                document.querySelectorAll('.payment-amount-input').forEach(i => i.required = false);
+            } else {
+                mixedPaymentsContainer.style.display = 'block';
+                document.querySelectorAll('.payment-amount-input').forEach(i => i.required = true);
+                calculatePaymentTotals();
+            }
+        });
+
+        addPaymentRowBtn.addEventListener('click', function () {
+            const firstRowSelect = document.querySelector('.payment-account-select');
+            if (!firstRowSelect) return;
+
+            const optionsHtml = firstRowSelect.innerHTML;
+            const saleTotal = getSaleTotal();
+            let currentPaid = 0;
+            document.querySelectorAll('.payment-amount-input').forEach(i => currentPaid += (parseFloat(i.value) || 0));
+            const remaining = Math.max(0, saleTotal - currentPaid);
+
+            const tr = document.createElement('tr');
+            tr.className = 'payment-row';
+            tr.innerHTML = `
+                <td>
+                    <select name="payments[${paymentRowIndex}][account_id]" class="form-select payment-account-select" required>
+                        ${optionsHtml}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0.01" name="payments[${paymentRowIndex}][amount]" class="form-control payment-amount-input" value="${remaining > 0 ? remaining.toFixed(2) : ''}" required placeholder="0.00">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-payment-row-btn">&times;</button>
+                </td>
+            `;
+
+            paymentRowsBody.appendChild(tr);
+            paymentRowIndex++;
+
+            tr.querySelector('.payment-amount-input').addEventListener('input', calculatePaymentTotals);
+            tr.querySelector('.remove-payment-row-btn').addEventListener('click', function () {
+                tr.remove();
+                calculatePaymentTotals();
+            });
+
+            calculatePaymentTotals();
+        });
+
+        paymentRowsBody.addEventListener('input', function (e) {
+            if (e.target.classList.contains('payment-amount-input')) {
+                calculatePaymentTotals();
+            }
+        });
+
+        paymentRowsBody.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-payment-row-btn')) {
+                const rows = paymentRowsBody.querySelectorAll('.payment-row');
+                if (rows.length > 1) {
+                    e.target.closest('.payment-row').remove();
+                    calculatePaymentTotals();
+                } else {
+                    alert('Debe mantener al menos un medio de pago para ventas al contado');
+                }
+            }
+        });
+
         // Checkout Interceptor
         openCheckoutBtn.addEventListener('click', function () {
             if (!warehouseSelect.value) {
@@ -763,16 +925,16 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                 return;
             }
 
-            // Sync total amount visually into modal
-            const formTotalNode = document.getElementById('totalAmount');
-            const totalPrefix = formTotalNode.parentElement.innerHTML; // e.g. "Total: $<span>123.45</span>"
-            // We just grab the content of the H3, but only the number part with symbol
-            let rawHtml = totalPrefix.replace('Total:', '').trim(); // e.g. "$<span>123.45</span>"
-            // Wait, an easier way: Total could be formatted differently depending on global settings.
-            // But we know 'checkoutDisplayTotal' accepts HTML.
-            document.getElementById('checkoutDisplayTotal').innerHTML = rawHtml;
+            const saleTotal = getSaleTotal();
+            document.getElementById('checkoutDisplayTotal').textContent = '$' + saleTotal.toFixed(2);
 
-            // Auto select 'cash' or 'credit' if desired, but we leave user selection
+            // Auto-llenar primera fila con el total si está vacía
+            const firstAmountInput = document.querySelector('.payment-amount-input');
+            if (firstAmountInput && (!firstAmountInput.value || parseFloat(firstAmountInput.value) === 0)) {
+                firstAmountInput.value = saleTotal.toFixed(2);
+            }
+
+            calculatePaymentTotals();
             checkoutModal.style.display = 'block';
         });
 
@@ -781,6 +943,19 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
             if (!warehouseSelect.value || productsContainer.children.length === 0) {
                 e.preventDefault();
                 alert('Faltan completar datos del depósito o productos');
+                return;
+            }
+
+            if (paymentTypeSelect.value === 'cash') {
+                let totalPaid = 0;
+                document.querySelectorAll('.payment-amount-input').forEach(input => {
+                    totalPaid += parseFloat(input.value) || 0;
+                });
+                const saleTotal = getSaleTotal();
+                if (Math.abs(saleTotal - totalPaid) > 0.01) {
+                    e.preventDefault();
+                    alert('El total asignado a los medios de pago ($' + totalPaid.toFixed(2) + ') debe ser igual al total de la venta ($' + saleTotal.toFixed(2) + ').');
+                }
             }
         });
     });

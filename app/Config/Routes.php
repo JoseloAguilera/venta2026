@@ -154,6 +154,20 @@ $routes->group('accounts', ['filter' => 'auth'], function ($routes) {
     $routes->get('delete/(:num)', 'Accounts::delete/$1');
     $routes->get('statement/(:num)', 'Accounts::statement/$1');
     $routes->post('storeTransaction/(:num)', 'Accounts::storeTransaction/$1');
+    $routes->get('transfer', 'Accounts::transfer');
+    $routes->post('store-transfer', 'Accounts::storeTransfer');
+});
+
+// Cash Sessions (Apertura y Cierre de Caja) module (requires authentication)
+$routes->group('cash-sessions', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'CashSessions::index');
+    $routes->get('open', 'CashSessions::open');
+    $routes->post('store-open', 'CashSessions::storeOpen');
+    $routes->get('close/(:num)', 'CashSessions::close/$1');
+    $routes->post('store-close/(:num)', 'CashSessions::storeClose/$1');
+    $routes->get('view/(:num)', 'CashSessions::view/$1');
+    $routes->get('ticket/(:num)', 'CashSessions::ticket/$1');
+    $routes->get('audit', 'CashSessions::audit');
 });
 
 // Reports module (requires authentication)
@@ -173,7 +187,13 @@ $routes->group('profile', ['filter' => 'auth'], function ($routes) {
 $routes->group('settings', ['filter' => 'role:admin'], function ($routes) {
     $routes->get('/', 'Settings::index');
     $routes->post('update', 'Settings::update');
+    $routes->post('change-key', 'Settings::changeKey');
 });
+
+// Auth Security Routes
+$routes->post('auth/verify-supervisor-pin', 'Auth::verifySupervisorPin');
+$routes->post('auth/unlock-screen', 'Auth::unlockScreen');
+$routes->get('audit-logs', 'AuditLogs::index', ['filter' => 'auth']);
 
 // Roles module (requires authentication)
 $routes->group('roles', ['filter' => 'auth'], function ($routes) {

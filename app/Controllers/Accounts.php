@@ -225,4 +225,98 @@ class Accounts extends BaseController
 
         return redirect()->back()->with('success', 'Movimiento registrado correctamente');
     }
+
+    public function transfer()
+    {
+        $data = [
+            'title' => 'Retiro / Transferencia entre Cuentas',
+            'accounts' => $this->accountModel->where('status', 1)->findAll()
+        ];
+
+        return view('accounts/transfer', $data);
+    }
+
+    public function storeTransfer()
+    {
+        $validation = \Config\Services::validation();
+        $validation->setRules([
+            'from_account_id' => 'required|numeric',
+            'to_account_id'   => 'required|numeric|differs[from_account_id]',
+            'amount'          => 'required|numeric|greater_than[0]',
+            'description'     => 'required|max_length[500]'
+        ], [
+            'to_account_id' => [
+                'differs' => 'La cuenta de destino debe ser diferente a la cuenta de origen.'
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        }
+
+        $fromId = $this->request->getPost('from_account_id');
+        $toId   = $this->request->getPost('to_account_id');
+        $amount = (float)$this->request->getPost('amount');
+        $desc   = $this->request->getPost('description');
+
+        $fromAcc = $this->accountModel->find($fromId);
+        $toAcc   = $this->accountModel->find($toId);
+
+        if (!$fromAcc || !$toAcc) {
+            return redirect()->back()->withInput()->with('error', 'Cuenta de origen o destino no encontrada');
+        }
+
+        if ($fromAcc['balance'] < $amount) {
+            return redirect()->back()->withInput()->with('error', 'Saldo insuficiente en la cuenta de origen (' . esc($fromAcc['name']) . '). Saldo actual: $' . number_format($fromAcc['balance'], 2));
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            $userId = session()->get('id') ?? session()->get('user_id');
+            $cashSessionModel = new \App\Models\CashSessionModel();
+            $activeSession = $cashSessionModel->getActiveSessionForUser($userId);
+
+            // 1. Débito en origen (Egreso)
+            $this->transactionModel->insert([
+                'account_id'     => $fromId,
+                'type'           => 'expense',
+                'amount'         => $amount,
+                'reference_type' => 'transfer',
+                'description'    => 'Transferencia a ' . $toAcc['name'] . ': ' . $desc,
+                'session_id'     => ($fromAcc['type'] === 'cash' && $activeSession) ? $activeSession['id'] : null,
+                'user_id'        => $userId,
+                'date'           => date('Y-m-d H:i:s')
+            ]);
+            $this->accountModel->decreaseBalance($fromId, $amount);
+
+            // 2. Crédito en destino (Ingreso)
+            $this->transactionModel->insert([
+                'account_id'     => $toId,
+                'type'           => 'income',
+                'amount'         => $amount,
+                'reference_type' => 'transfer',
+                'description'    => 'Transferencia desde ' . $fromAcc['name'] . ': ' . $desc,
+                'session_id'     => ($toAcc['type'] === 'cash' && $activeSession) ? $activeSession['id'] : null,
+                'user_id'        => $userId,
+                'date'           => date('Y-m-d H:i:s')
+            ]);
+            $this->accountModel->increaseBalance($toId, $amount);
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return redirect()->back()->withInput()->with('error', 'Error al procesar la transferencia');
+            }
+
+            log_activity('Cuentas', 'Transferencia / Retiro', "Retiro/Transferencia de $" . number_format($amount, 2) . " desde '{$fromAcc['name']}' hacia '{$toAcc['name']}'. Motivo: $desc");
+
+            return redirect()->to('/accounts')->with('success', 'Transferencia de $' . number_format($amount, 2) . ' realizada correctamente.');
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
 }

@@ -57,13 +57,31 @@ class Sales extends BaseController
         // Check insert permission
         require_permission('sales', 'insert');
 
+        $cashSessionModel = new \App\Models\CashSessionModel();
+        $userId = $this->session->get('id') ?? $this->session->get('user_id');
+        $activeSession = $cashSessionModel->getActiveSessionForUser($userId);
+
+        $cashLimitAlert = false;
+        $currentCashBalance = 0;
+        if ($activeSession) {
+            $summary = $cashSessionModel->getSessionSummary($activeSession['id']);
+            $currentCashBalance = (float)$activeSession['opening_amount'] + $summary['net_movement'];
+            $cashLimitThreshold = (float)model('SettingsModel')->getValue('cash_limit_threshold', 5000000);
+            if ($currentCashBalance >= $cashLimitThreshold) {
+                $cashLimitAlert = true;
+            }
+        }
+
         $data = [
             'title' => 'Nueva Venta',
             'customers' => $this->customerModel->findAll(),
             'products' => $this->productModel->getProductsWithCategory(),
             'warehouses' => $this->warehouseModel->getActiveWarehouses(), // Add warehouses
             'accounts' => $this->accountModel->where('status', 1)->findAll(),
-            'sale_number' => $this->saleModel->generateSaleNumber()
+            'sale_number' => $this->saleModel->generateSaleNumber(),
+            'activeSession' => $activeSession,
+            'currentCashBalance' => $currentCashBalance,
+            'cashLimitAlert' => $cashLimitAlert
         ];
 
         return view('sales/create', $data);
@@ -133,10 +151,12 @@ class Sales extends BaseController
             $tax = $subtotal * 0; // Sin impuestos por ahora
             $total = $subtotal + $tax;
 
+            $userId = $this->session->get('id') ?? $this->session->get('user_id');
+
             // Crear venta
             $saleData = [
                 'customer_id' => $customerId,
-                'user_id' => $this->session->get('id'),
+                'user_id' => $userId,
                 'warehouse_id' => $warehouseId, // Record warehouse
                 'sale_number' => $this->saleModel->generateSaleNumber(),
                 'date' => date('Y-m-d'),
@@ -149,16 +169,66 @@ class Sales extends BaseController
 
             $saleId = $this->saleModel->insert($saleData);
 
-            if (!empty($accountId)) {
-                $this->transactionModel->insert([
+            // Registrar Medios de Pago Mixtos
+            $payments = $this->request->getPost('payments');
+            $salePaymentModel = new \App\Models\SalePaymentModel();
+            $cashSessionModel = new \App\Models\CashSessionModel();
+            $activeSession = $cashSessionModel->getActiveSessionForUser($userId);
+
+            if (!empty($payments) && is_array($payments) && $paymentType === 'cash') {
+                foreach ($payments as $pay) {
+                    $payAccountId = $pay['account_id'] ?? null;
+                    $payAmount    = (float)($pay['amount'] ?? 0);
+
+                    if (!empty($payAccountId) && $payAmount > 0) {
+                        $accInfo = $this->accountModel->find($payAccountId);
+                        $accName = $accInfo ? $accInfo['name'] : 'Caja';
+                        $accType = $accInfo ? $accInfo['type'] : 'cash';
+
+                        // Insertar desglose de pago
+                        $salePaymentModel->insert([
+                            'sale_id'    => $saleId,
+                            'account_id' => $payAccountId,
+                            'amount'     => $payAmount
+                        ]);
+
+                        // Registrar transacción financiera asociada
+                        $this->transactionModel->insert([
+                            'account_id'     => $payAccountId,
+                            'type'           => 'income',
+                            'amount'         => $payAmount,
+                            'reference_type' => 'sale',
+                            'reference_id'   => $saleId,
+                            'description'    => 'Cobro de venta #' . $saleData['sale_number'] . ' (' . $accName . ')',
+                            'session_id'     => ($accType === 'cash' && $activeSession) ? $activeSession['id'] : null,
+                            'user_id'        => $userId,
+                            'date'           => date('Y-m-d H:i:s')
+                        ]);
+
+                        $this->accountModel->increaseBalance($payAccountId, $payAmount);
+                    }
+                }
+            } elseif (!empty($accountId) && $paymentType === 'cash') {
+                // Modo compatibilidad legacy (pago único)
+                $accInfo = $this->accountModel->find($accountId);
+                $accType = $accInfo ? $accInfo['type'] : 'cash';
+
+                $salePaymentModel->insert([
+                    'sale_id'    => $saleId,
                     'account_id' => $accountId,
-                    'type' => 'income',
-                    'amount' => $total,
+                    'amount'     => $total
+                ]);
+
+                $this->transactionModel->insert([
+                    'account_id'     => $accountId,
+                    'type'           => 'income',
+                    'amount'         => $total,
                     'reference_type' => 'sale',
-                    'reference_id' => $saleId,
-                    'description' => 'Cobro de venta #' . $saleData['sale_number'],
-                    'user_id' => $this->session->get('id'),
-                    'date' => date('Y-m-d H:i:s')
+                    'reference_id'   => $saleId,
+                    'description'    => 'Cobro de venta #' . $saleData['sale_number'],
+                    'session_id'     => ($accType === 'cash' && $activeSession) ? $activeSession['id'] : null,
+                    'user_id'        => $userId,
+                    'date'           => date('Y-m-d H:i:s')
                 ]);
                 $this->accountModel->increaseBalance($accountId, $total);
             }
@@ -186,6 +256,8 @@ class Sales extends BaseController
                 return redirect()->back()->with('error', 'Error al crear la venta');
             }
 
+            log_activity('Ventas', 'Crear Venta', "Nueva venta creada #{$saleData['sale_number']} por $" . number_format($total, 2));
+
             // Redirect to view instead of index
             return redirect()->to('/sales/view/' . $saleId)->with('success', 'Venta creada correctamente');
 
@@ -206,9 +278,13 @@ class Sales extends BaseController
             return redirect()->to('/sales')->with('error', 'Venta no encontrada');
         }
 
+        $salePaymentModel = new \App\Models\SalePaymentModel();
+        $salePayments = $salePaymentModel->getPaymentsBySale($id);
+
         $data = [
             'title' => 'Detalle de Venta #' . $sale['sale_number'],
             'sale' => $sale,
+            'sale_payments' => $salePayments,
             'pending_balance' => $this->saleModel->getPendingBalance($id)
         ];
 
@@ -226,8 +302,12 @@ class Sales extends BaseController
             return "Venta no encontrada";
         }
 
+        $salePaymentModel = new \App\Models\SalePaymentModel();
+        $salePayments = $salePaymentModel->getPaymentsBySale($id);
+
         $data = [
             'sale' => $sale,
+            'sale_payments' => $salePayments,
             'settings' => model('SettingsModel')->getAllSettings() // Corrected method name
         ];
 
@@ -263,6 +343,8 @@ class Sales extends BaseController
             $this->saleModel->update($id, ['status' => 'cancelled']);
 
             $this->db->transComplete();
+
+            log_activity('Ventas', 'Anular Venta', "Venta #{$sale['sale_number']} (ID: $id) por monto de $" . number_format($sale['total'], 2) . " anulada correctamente. Stock restaurado.");
 
             return redirect()->to('/sales')->with('success', 'Venta anulada correctamente');
 

@@ -97,6 +97,7 @@ class Users extends BaseController
             'username' => $this->request->getPost('username'),
             'email' => $this->request->getPost('email'),
             'password' => $this->request->getPost('password'), // UserModel hashes this automatically
+            'supervisor_pin' => $this->request->getPost('supervisor_pin') ?? '1234',
             'role_id' => $this->request->getPost('role_id'),
             'active' => 1
         ];
@@ -184,6 +185,11 @@ class Users extends BaseController
             'role_id' => $this->request->getPost('role_id'),
             'active' => $this->request->getPost('active') ? 1 : 0
         ];
+
+        $supervisorPin = $this->request->getPost('supervisor_pin');
+        if ($supervisorPin !== null) {
+            $userData['supervisor_pin'] = $supervisorPin;
+        }
 
         if (!empty($password)) {
             $userData['password'] = $password; // UserModel hashes this automatically

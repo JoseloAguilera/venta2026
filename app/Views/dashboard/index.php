@@ -64,14 +64,32 @@ echo view('templates/header', ['title' => $title ?? 'Dashboard', 'extraCSS' => $
             </div>
 
             <!-- Quick Actions -->
-            <div class="card">
-                <div class="card-header">
-                    <h3>Acciones Rápidas</h3>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h3 class="mb-0">Acciones Rápidas</h3>
                 </div>
                 <div class="card-body">
                     <div class="d-flex gap-2" style="flex-wrap: wrap;">
+                        <!-- Control de Caja / Turno -->
+                        <?php if (!empty($activeCashSession)): ?>
+                            <a href="<?= base_url('cash-sessions/close/' . $activeCashSession['id']) ?>" class="btn btn-warning fw-bold">
+                                🔒 Arqueo y Cierre de Caja (#<?= $activeCashSession['id'] ?>)
+                            </a>
+                        <?php else: ?>
+                            <a href="<?= base_url('cash-sessions/open') ?>" class="btn btn-success fw-bold">
+                                🔓 Abrir Turno de Caja
+                            </a>
+                        <?php endif; ?>
+
+                        <!-- Operaciones principales -->
                         <a href="<?= base_url('sales/create') ?>" class="btn btn-primary">
                             💰 Nueva Venta
+                        </a>
+                        <a href="<?= base_url('accounts/transfer') ?>" class="btn btn-info fw-bold" style="background-color: #0284c7 !important; border-color: #0369a1 !important; color: #ffffff !important;">
+                            💸 Retiro / Transferencia
+                        </a>
+                        <a href="<?= base_url('expenses/create') ?>" class="btn btn-danger fw-bold" style="background-color: #e11d48 !important; border-color: #be123c !important; color: #ffffff !important;">
+                            💸 Registrar Gasto
                         </a>
                         <a href="<?= base_url('purchases/create') ?>" class="btn btn-primary">
                             🛒 Nueva Compra

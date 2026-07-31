@@ -65,14 +65,56 @@ class Settings extends BaseController
             'company_email',
             'company_phone',
             'min_price_password',
-            'currency'
+            'supervisor_pin',
+            'pin_sale_annul',
+            'pin_min_price',
+            'pin_collection_annul',
+            'currency',
+            'autolock_enabled',
+            'autolock_minutes'
         ];
 
         foreach ($settings as $key) {
             $value = $this->request->getPost($key);
-            $this->settingsModel->setValue($key, $value);
+            if ($value !== null) {
+                if ($key === 'autolock_enabled' && $value === null) {
+                    $value = '0';
+                }
+                $this->settingsModel->setValue($key, $value);
+            }
         }
 
         return redirect()->to('/settings')->with('success', 'Configuración actualizada correctamente');
+    }
+
+    public function changeKey()
+    {
+        helper('permission');
+        if (!is_admin()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Acceso denegado']);
+        }
+
+        $key = $this->request->getPost('key');
+        $newPin = $this->request->getPost('new_pin');
+        $confirmPin = $this->request->getPost('confirm_pin');
+
+        $allowedKeys = ['supervisor_pin', 'min_price_password', 'pin_sale_annul', 'pin_min_price', 'pin_collection_annul'];
+
+        if (!in_array($key, $allowedKeys)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Clave no válida']);
+        }
+
+        if (empty($newPin) || strlen($newPin) < 4) {
+            return $this->response->setJSON(['success' => false, 'message' => 'La nueva clave debe tener al menos 4 caracteres.']);
+        }
+
+        if ($newPin !== $confirmPin) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Las claves no coinciden. Por favor vuelva a intentar.']);
+        }
+
+        $this->settingsModel->setValue($key, $newPin);
+        log_activity('Seguridad', 'Cambio de Clave', "Se actualizó la clave de seguridad para '$key'");
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Clave actualizada correctamente']);
     }
 }

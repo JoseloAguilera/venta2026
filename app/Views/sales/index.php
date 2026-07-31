@@ -103,10 +103,10 @@ helper('permission');
                                                     🖨️
                                                 </a>
                                                 <?php if (can_delete('sales') && $sale['status'] !== 'cancelled'): ?>
-                                                    <a href="<?= base_url('sales/annul/' . $sale['id']) ?>"
+                                                    <a href="javascript:void(0)"
+                                                        onclick="requestAnnulWithPin('<?= base_url('sales/annul/' . $sale['id']) ?>', '<?= esc($sale['sale_number']) ?>')"
                                                         class="btn btn-sm btn-danger"
-                                                        onclick="return confirm('¿Anular esta venta? Esta acción revertirá el stock.')"
-                                                        title="Anular">
+                                                        title="Anular con PIN">
                                                         🚫
                                                     </a>
                                                 <?php endif; ?>
@@ -125,6 +125,30 @@ helper('permission');
     </div>
 </div>
 
+<!-- Modal para PIN de Supervisor -->
+<div class="modal fade" id="supervisorPinModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title mb-0">🔐 Autorización de Supervisor Requerida</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="annulModalMsg">Para anular esta venta, ingrese el PIN de un supervisor o administrador.</p>
+                <div class="mb-3">
+                    <label for="supervisorPinInput" class="form-label font-weight-bold">PIN de Supervisor</label>
+                    <input type="password" id="supervisorPinInput" class="form-control form-control-lg text-center fw-bold" placeholder="****" autocomplete="off" style="letter-spacing: 0.3em; font-size: 1.5rem;">
+                    <div id="pinErrorMsg" class="text-danger small mt-2" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger fw-bold" id="confirmAnnulBtn">Confirmar Anulación</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php
 $extraJS = [
     'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js',
@@ -133,8 +157,19 @@ $extraJS = [
 $scripts = "
 <script>
     var table;
+    var targetAnnulUrl = '';
+
     function openTicket(url) {
         window.open(url, 'Ticket', 'width=400,height=600,scrollbars=yes');
+    }
+
+    function requestAnnulWithPin(url, saleNumber) {
+        targetAnnulUrl = url;
+        $('#annulModalMsg').html('Se requiere la autorización de un supervisor para anular la venta <strong>#' + saleNumber + '</strong>.');
+        $('#supervisorPinInput').val('');
+        $('#pinErrorMsg').hide();
+        $('#supervisorPinModal').modal('show');
+        setTimeout(() => $('#supervisorPinInput').focus(), 400);
     }
 
     $(document).ready(function () {
@@ -152,9 +187,28 @@ $scripts = "
             }
         });
 
-        // Búsqueda por observación (columna 7 oculta)
         $('#obsSearch').on('keyup', function () {
             table.column(7).search(this.value).draw();
+        });
+
+        $('#confirmAnnulBtn').on('click', function() {
+            var pin = $('#supervisorPinInput').val();
+            if (!pin) {
+                $('#pinErrorMsg').text('Debe ingresar el PIN de supervisor').show();
+                return;
+            }
+            $('#pinErrorMsg').hide();
+
+            $.post('" . base_url('auth/verify-supervisor-pin') . "', { pin: pin }, function(res) {
+                if (res.success) {
+                    $('#supervisorPinModal').modal('hide');
+                    window.location.href = targetAnnulUrl;
+                } else {
+                    $('#pinErrorMsg').text(res.message || 'PIN de supervisor incorrecto').show();
+                }
+            }, 'json').fail(function() {
+                $('#pinErrorMsg').text('Error al verificar PIN').show();
+            });
         });
     });
 </script>

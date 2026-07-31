@@ -186,6 +186,17 @@
                 <span><?= formato_moneda($sale['total']) ?>
                 </span>
             </div>
+            <?php if (!empty($sale_payments)): ?>
+                <div style="margin-top: 5px; border-top: 1px dashed #000; padding-top: 3px;">
+                    <div style="font-size: 10px; text-align: center; margin-bottom: 2px;">MEDIOS DE PAGO</div>
+                    <?php foreach ($sale_payments as $pay): ?>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                            <span><?= esc($pay['account_name']) ?>:</span>
+                            <span><?= formato_moneda($pay['amount']) ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
 
         <div class="footer">

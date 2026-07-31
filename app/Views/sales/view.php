@@ -76,6 +76,24 @@ helper('permission');
                         </div>
                     </div>
 
+                    <?php if (!empty($sale_payments)): ?>
+                        <div class="card bg-light mb-4">
+                            <div class="card-header py-2 bg-secondary text-white font-weight-bold">
+                                💳 Desglose de Medios de Pago
+                            </div>
+                            <div class="card-body py-2">
+                                <div class="row">
+                                    <?php foreach ($sale_payments as $pay): ?>
+                                        <div class="col-md-4 py-1">
+                                            <small class="text-muted"><?= esc($pay['account_name']) ?>:</small>
+                                            <strong class="text-success d-block"><?= formato_moneda($pay['amount']) ?></strong>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
                     <h4>Productos</h4>
                     <div class="table-responsive">
                         <table class="table">

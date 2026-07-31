@@ -71,6 +71,13 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                             <small class="text-muted">Dejar en blanco para mantener la contraseña actual.</small>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="supervisor_pin" class="form-label font-weight-bold">🔐 PIN de Supervisor (Personal)</label>
+                            <input type="text" class="form-control" id="supervisor_pin" name="supervisor_pin"
+                                value="<?= old('supervisor_pin', $user['supervisor_pin'] ?? '1234') ?>" minlength="4" maxlength="10">
+                            <small class="text-muted">PIN personal para autorizar anulaciones de ventas. Por defecto: 1234</small>
+                        </div>
+
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="active" name="active" value="1"
                                 <?= old('active', $user['active'] ?? 0) ? 'checked' : '' ?>>

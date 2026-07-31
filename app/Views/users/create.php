@@ -68,6 +68,13 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                             </select>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="supervisor_pin" class="form-label font-weight-bold">🔐 PIN de Supervisor (Personal)</label>
+                            <input type="text" class="form-control" id="supervisor_pin" name="supervisor_pin"
+                                value="<?= old('supervisor_pin', '1234') ?>" minlength="4" maxlength="10">
+                            <small class="text-muted">PIN personal para autorizar anulaciones de ventas. Por defecto: 1234</small>
+                        </div>
+
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary">💾 Guardar Usuario</button>
                             <a href="<?= base_url('users') ?>" class="btn btn-secondary">Cancelar</a>

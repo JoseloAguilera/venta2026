@@ -17,11 +17,12 @@ helper('permission');
                 <h2><?= $title ?></h2>
             </div>
             <div class="topbar-actions">
-                <div class="topbar-actions">
-                    <a href="<?= base_url('accounts/create') ?>" class="btn btn-primary">
-                        ➕ Nueva Cuenta
-                    </a>
-                </div>
+                <a href="<?= base_url('accounts/transfer') ?>" class="btn btn-outline-primary me-2">
+                    💸 Retiro / Transferencia
+                </a>
+                <a href="<?= base_url('accounts/create') ?>" class="btn btn-primary">
+                    ➕ Nueva Cuenta
+                </a>
             </div>
         </div>
 

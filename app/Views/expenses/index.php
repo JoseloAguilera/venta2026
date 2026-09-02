@@ -59,7 +59,7 @@ helper('permission');
                                 <?php if (!empty($expenses)): ?>
                                     <?php foreach ($expenses as $expense): ?>
                                         <tr>
-                                            <td><?= date('d/m/Y', strtotime($expense['date'])) ?></td>
+                                            <td data-order="<?= $expense['date'] ?>"><?= date('d/m/Y', strtotime($expense['date'])) ?></td>
                                             <td>
                                                 <span class="badge badge-primary"><?= esc($expense['category_name']) ?></span>
                                             </td>

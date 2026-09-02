@@ -93,7 +93,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 <?php if (!empty($logs)): ?>
                                     <?php foreach ($logs as $log): ?>
                                         <tr>
-                                            <td><small><?= date('d/m/Y H:i:s', strtotime($log['created_at'])) ?></small></td>
+                                            <td data-order="<?= $log['created_at'] ?>"><small><?= date('d/m/Y H:i:s', strtotime($log['created_at'])) ?></small></td>
                                             <td><strong><?= esc($log['username'] ?? 'Sistema') ?></strong></td>
                                             <td><code class="text-dark"><?= esc($log['ip_address'] ?? '127.0.0.1') ?></code></td>
                                             <td>

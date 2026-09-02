@@ -133,7 +133,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 <?php if (!empty($transactions)): ?>
                                     <?php foreach ($transactions as $tx): ?>
                                         <tr>
-                                            <td><?= date('d/m/Y H:i', strtotime($tx['date'])) ?></td>
+                                            <td data-order="<?= $tx['date'] ?>"><?= date('d/m/Y H:i', strtotime($tx['date'])) ?></td>
                                             <td>
                                                 <span class="badge bg-secondary"><?= esc(strtoupper($tx['reference_type'])) ?></span>
                                                 <?php if($tx['reference_id']) echo "#".$tx['reference_id']; ?>

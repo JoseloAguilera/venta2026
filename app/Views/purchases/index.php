@@ -55,7 +55,7 @@ helper('permission');
                                     <?php foreach ($purchases as $purchase): ?>
                                         <tr>
                                             <td><strong><?= esc($purchase['purchase_number']) ?></strong></td>
-                                            <td><?= date('d/m/Y', strtotime($purchase['date'])) ?></td>
+                                            <td data-order="<?= $purchase['date'] ?>"><?= date('d/m/Y', strtotime($purchase['date'])) ?></td>
                                             <td><?= esc($purchase['supplier_name']) ?></td>
                                             <td>
                                                 <span

@@ -55,7 +55,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                             <td>
                                                 <?= esc($transfer['transfer_code']) ?>
                                             </td>
-                                            <td>
+                                            <td data-order="<?= $transfer['created_at'] ?>">
                                                 <?= date('d/m/Y H:i', strtotime($transfer['created_at'])) ?>
                                             </td>
                                             <td>

@@ -109,7 +109,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 <?php if (!empty($transactions)): ?>
                                     <?php foreach ($transactions as $tx): ?>
                                         <tr>
-                                            <td><?= date('d/m/Y H:i:s', strtotime($tx['date'])) ?></td>
+                                            <td data-order="<?= $tx['date'] ?>"><?= date('d/m/Y H:i:s', strtotime($tx['date'])) ?></td>
                                             <td>
                                                 <?php if ($tx['type'] === 'income'): ?>
                                                     <span class="badge bg-success">INGRESO</span>

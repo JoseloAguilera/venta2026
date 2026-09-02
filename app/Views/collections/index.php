@@ -44,7 +44,7 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                         <tr>
                                             <td><strong><?= esc($sale['sale_number']) ?></strong></td>
                                             <td><?= esc($sale['customer_name']) ?></td>
-                                            <td><?= date('d/m/Y', strtotime($sale['date'])) ?></td>
+                                            <td data-order="<?= $sale['date'] ?>"><?= date('d/m/Y', strtotime($sale['date'])) ?></td>
                                             <td><?= formato_moneda($sale['total']) ?></td>
                                             <td class="text-danger">
                                                 <strong><?= formato_moneda($sale['pending_balance']) ?></strong>

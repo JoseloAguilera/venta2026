@@ -49,7 +49,8 @@ echo view('templates/header', ['title' => $title, 'extraCSS' => $extraCSS]);
                                 <?php if (!empty($adjustments)): ?>
                                     <?php foreach ($adjustments as $adjustment): ?>
                                         <tr>
-                                            <td data-order="<?= $adjustment['created_at'] ?>"><?= date('d/m/Y H:i', strtotime($adjustment['created_at'])) ?></td>
+                                            <?php $adjTime = strtotime(str_replace('/', '-', $adjustment['created_at'])) ?: strtotime($adjustment['created_at']); ?>
+                                            <td data-order="<?= $adjTime ?>"><?= date('d/m/Y H:i', $adjTime) ?></td>
                                             <td>
                                                 <strong><?= esc($adjustment['product_code']) ?></strong><br>
                                                 <small><?= esc($adjustment['product_name']) ?></small>

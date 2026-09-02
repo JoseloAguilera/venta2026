@@ -64,7 +64,8 @@ helper('permission');
                                     <?php foreach ($sales as $sale): ?>
                                         <tr class="<?= $sale['status'] === 'cancelled' ? 'table-danger' : '' ?>">
                                             <td><strong><?= esc($sale['sale_number']) ?></strong></td>
-                                            <td data-order="<?= $sale['date'] ?>"><?= date('d/m/Y', strtotime($sale['date'])) ?></td>
+                                            <?php $saleTime = strtotime(str_replace('/', '-', $sale['date'])) ?: strtotime($sale['date']); ?>
+                                            <td data-order="<?= $saleTime ?>"><?= date('d/m/Y', $saleTime) ?></td>
                                             <td><?= esc($sale['customer_name']) ?></td>
                                             <td>
                                                 <span
